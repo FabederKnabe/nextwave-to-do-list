@@ -20,3 +20,7 @@ desktop.ini
 # Node (falls später ein Build-Step kommt)
 node_modules/
 dist/
+
+# Supabase CLI cache
+supabase/.temp/
+supabase/.branches/

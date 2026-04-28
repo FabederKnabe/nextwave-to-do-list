@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--p0:oklch(0.7 0.16 25);--p1:oklch(0.78 0.13 80);--p2:oklch(0.72 0.1 200);--p3:oklch(0.7 0.08 280);--r:10px;--rl:14px;}
@@ -374,6 +375,61 @@ body{
 /* ============== HIDDEN VIEWS ============== */
 #viewTodos,#viewThemen,#viewManual{display:none}
 
+/* ============== LOGIN ============== */
+.login-wrap{
+  display:none;position:fixed;inset:0;z-index:400;
+  align-items:center;justify-content:center;
+  background:var(--bg);
+  background-image:radial-gradient(ellipse 80% 50% at 50% 0%,var(--glow),transparent 70%);
+}
+.login-wrap.open{display:flex}
+.login-box{
+  width:380px;max-width:92vw;background:var(--bg2);
+  border:1px solid var(--border);border-radius:16px;
+  padding:32px 28px;box-shadow:var(--shadow);
+}
+.login-logo-wrap{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.login-logo-img{height:56px;width:auto}
+.login-divider{width:1px;height:36px;background:var(--border)}
+.login-subtitle{
+  font-size:13px;color:var(--text);font-weight:300;
+  letter-spacing:0.28em;text-transform:uppercase;
+}
+.login-field{margin-bottom:14px}
+.login-field label{
+  display:block;font-size:11px;color:var(--text2);
+  margin-bottom:6px;letter-spacing:0.04em;font-weight:500;
+}
+.login-field input{
+  width:100%;padding:10px 12px;font-size:13px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);
+  font-family:inherit;outline:none;transition:border 0.2s;
+}
+.login-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.login-btn{
+  width:100%;padding:11px 14px;font-size:14px;font-weight:500;
+  background:var(--accent);color:#fff;border:none;
+  border-radius:10px;cursor:pointer;font-family:inherit;
+  margin-top:6px;transition:background 0.18s;
+}
+.login-btn:hover{background:color-mix(in srgb,var(--accent) 90%,#000)}
+.login-btn:disabled{opacity:0.6;cursor:not-allowed}
+.login-error{
+  margin-top:12px;font-size:12px;color:var(--p0);
+  min-height:16px;text-align:center;
+}
+.login-info{
+  margin-top:12px;font-size:12px;color:var(--p2);
+  min-height:16px;text-align:center;
+}
+.login-link{
+  display:block;text-align:center;margin-top:14px;
+  font-size:12px;color:var(--text2);
+  background:none;border:none;cursor:pointer;font-family:inherit;
+}
+.login-link:hover{color:var(--accent)}
+
 /* Responsive */
 @media (max-width:900px){
   .layout{grid-template-columns:1fr}
@@ -415,7 +471,21 @@ body{
         </button>
       </div>
     </div>
-    <button class="btn btn-sm" onclick="openSettings()">Einstellungen</button>
+    <div class="theme-dropdown" id="userDropdown" style="display:none">
+      <button class="icon-btn" id="userIconBtn" onclick="toggleUserDropdown(event)" title="Konto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <div class="theme-dropdown-menu" id="userMenu">
+        <button class="theme-option" onclick="openInvite()">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4" width="15" height="12" rx="2"/><path d="m3 5 7 6 7-6"/></svg>
+          Nutzer einladen
+        </button>
+        <button class="theme-option" onclick="doLogout()">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 4H4v12h4"/><path d="m13 7 3 3-3 3"/><path d="M16 10H7"/></svg>
+          Logout
+        </button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -492,27 +562,20 @@ body{
       </div>
     </div>
 
-    <div id="welcomeMsg" style="display:none;padding:60px 24px;text-align:center">
-      <div style="font-size:18px;font-weight:600;margin-bottom:8px;letter-spacing:-0.01em">Willkommen</div>
-      <p style="font-size:14px;color:var(--text2);margin-bottom:20px">Bitte Output-Ordner konfigurieren, damit deine Daten geladen werden.</p>
-      <button class="btn btn-primary" onclick="openSettings()">Konfigurieren</button>
-    </div>
   </main>
 </div>
 
-<!-- Settings Modal -->
-<div class="modal-wrap" id="settingsModal">
+<!-- Invite Modal -->
+<div class="modal-wrap" id="inviteModal">
   <div class="modal">
-    <h3>Einstellungen</h3>
-    <div class="modal-sub">Pfade und Refresh-Verhalten konfigurieren.</div>
-    <label>Output-Ordner</label>
-    <input type="text" id="cfgPath" placeholder="C:\Videocalls\output"/>
-    <label>Auto-Refresh (Sekunden, 0 = aus)</label>
-    <input type="number" id="cfgRefresh" value="30" min="0" max="300"/>
-    <p class="modal-hint">Starte server.py und öffne über http://localhost:8000</p>
+    <h3>Nutzer einladen</h3>
+    <div class="modal-sub">Eine Einladung per E-Mail verschicken. Der Empfänger setzt sein Passwort selbst.</div>
+    <label>E-Mail-Adresse</label>
+    <input type="email" id="inviteEmail" placeholder="name@example.com" autocomplete="off"/>
+    <p class="modal-hint" id="inviteHint">&nbsp;</p>
     <div class="modal-actions">
-      <button class="btn" onclick="closeSettings()">Abbrechen</button>
-      <button class="btn btn-primary" onclick="saveSettings()">Speichern</button>
+      <button class="btn" onclick="closeInvite()">Abbrechen</button>
+      <button class="btn btn-primary" id="inviteSubmit" onclick="sendInvite()">Einladen</button>
     </div>
   </div>
 </div>
@@ -525,10 +588,17 @@ body{
 
 <script>
 /* ============================================================
-   STATE — same keys as before, fully backwards-compatible
+   SUPABASE CLIENT
+   ============================================================ */
+const SUPABASE_URL = 'https://eufqqvatktwzyrjzrhoi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1ZnFxdmF0a3R3enlyanpyaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDY2OTUsImV4cCI6MjA5Mjk4MjY5NX0.JaFG4n3Y223H7EsCxiD3skHdaNmnKU8yNHHQ6D3ZErU';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ============================================================
+   STATE — done/prio/manual/deleted bleiben in Phase 3 noch
+   in localStorage; werden in Phase 4 nach Supabase migriert.
    ============================================================ */
 const LS = {
-  path: localStorage.getItem('nw_path') || '',
   refresh: parseInt(localStorage.getItem('nw_refresh') || '30'),
   done: JSON.parse(localStorage.getItem('nw_done') || '{}'),
   prio: JSON.parse(localStorage.getItem('nw_prio') || '{}'),
@@ -542,6 +612,7 @@ let masterData = { todos: [], themen: [] };
 let statusFilter = 'open';
 let currentView = 'todos';
 let refreshTimer = null;
+let currentUser = null;
 
 function save() {
   localStorage.setItem('nw_done', JSON.stringify(LS.done));
@@ -550,25 +621,6 @@ function save() {
   localStorage.setItem('nw_deleted', JSON.stringify(LS.deleted));
 }
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
-
-/* ============================================================
-   SETTINGS MODAL
-   ============================================================ */
-function openSettings() {
-  document.getElementById('cfgPath').value = LS.path;
-  document.getElementById('cfgRefresh').value = LS.refresh;
-  document.getElementById('settingsModal').classList.add('open');
-}
-function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
-function saveSettings() {
-  LS.path = document.getElementById('cfgPath').value.trim();
-  LS.refresh = parseInt(document.getElementById('cfgRefresh').value) || 0;
-  localStorage.setItem('nw_path', LS.path);
-  localStorage.setItem('nw_refresh', LS.refresh);
-  closeSettings();
-  loadData();
-  setupRefresh();
-}
 
 /* ============================================================
    DATA LOADING
@@ -581,12 +633,13 @@ async function loadData() {
   setStatus('Lade...', 'warn');
   const master = await fetchJ('master.json');
   if (!master) {
-    document.getElementById('welcomeMsg').style.display = 'block';
-    if (!LS.path) openSettings();
+    masterData.todos = [];
+    masterData.themen = [];
     setStatus('Keine Daten', 'err');
+    renderCurrentView();
+    updateNavBadges();
     return;
   }
-  document.getElementById('welcomeMsg').style.display = 'none';
   masterData.todos = [...(master.todos || []), ...(master.offene_punkte || [])];
   masterData.themen = master.themen || [];
   setStatus('Geladen', '');
@@ -910,9 +963,18 @@ function deleteManual(key) {
    ============================================================ */
 function toggleDropdown(e) {
   e.stopPropagation();
+  document.getElementById('userMenu')?.classList.remove('open');
   document.getElementById('themeMenu').classList.toggle('open');
 }
-document.addEventListener('click', () => document.getElementById('themeMenu')?.classList.remove('open'));
+function toggleUserDropdown(e) {
+  e.stopPropagation();
+  document.getElementById('themeMenu')?.classList.remove('open');
+  document.getElementById('userMenu').classList.toggle('open');
+}
+document.addEventListener('click', () => {
+  document.getElementById('themeMenu')?.classList.remove('open');
+  document.getElementById('userMenu')?.classList.remove('open');
+});
 
 function setTheme(t) {
   localStorage.setItem('nw_theme', t);
@@ -1004,36 +1066,126 @@ function esc(s) {
 }
 
 
-const AUTH = {user:'nextWAVE-digital',hash:'501af41f68e529c38c0c02ae916099336c65f43975ed60afb3bebc773755fbd9'};
-async function sha256(str){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
-async function doLogin(){
-  const user=document.getElementById('loginUser').value.trim();
-  const pw=document.getElementById('loginPw').value;
-  const errEl=document.getElementById('loginError');
-  if(!user||!pw){errEl.textContent='Bitte alle Felder ausfüllen.';return;}
-  const h=await sha256(pw);
-  if(user===AUTH.user&&h===AUTH.hash){
-    sessionStorage.setItem('nw_auth','1');
-    document.getElementById('loginWrap').style.display='none';
-    loadData();setupRefresh();
-  }else{errEl.textContent='Benutzername oder Passwort falsch.';document.getElementById('loginPw').value='';}
+/* ============================================================
+   AUTH (Supabase)
+   ============================================================ */
+function showLogin() {
+  document.getElementById('loginWrap').classList.add('open');
+  document.getElementById('userDropdown').style.display = 'none';
+  document.getElementById('userMenu').classList.remove('open');
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('loginInfo').textContent = '';
 }
-function checkAuth(){
-  if(sessionStorage.getItem('nw_auth')!=='1'){document.getElementById('loginWrap').style.display='flex';return false;}
-  document.getElementById('loginWrap').style.display='none';return true;
+function hideLogin() {
+  document.getElementById('loginWrap').classList.remove('open');
+  document.getElementById('userDropdown').style.display = '';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPw').value = '';
 }
+
+async function doLogin() {
+  const email = document.getElementById('loginUser').value.trim();
+  const pw = document.getElementById('loginPw').value;
+  const errEl = document.getElementById('loginError');
+  const infoEl = document.getElementById('loginInfo');
+  const btn = document.getElementById('loginBtn');
+  errEl.textContent = '';
+  infoEl.textContent = '';
+  if (!email || !pw) { errEl.textContent = 'Bitte alle Felder ausfüllen.'; return; }
+  btn.disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+  btn.disabled = false;
+  if (error) {
+    errEl.textContent = 'E-Mail oder Passwort falsch.';
+    document.getElementById('loginPw').value = '';
+  }
+  // Erfolgsfall: onAuthStateChange übernimmt
+}
+
+async function doPasswordReset() {
+  const email = document.getElementById('loginUser').value.trim();
+  const errEl = document.getElementById('loginError');
+  const infoEl = document.getElementById('loginInfo');
+  errEl.textContent = '';
+  infoEl.textContent = '';
+  if (!email) { errEl.textContent = 'Bitte E-Mail-Adresse eingeben.'; return; }
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) errEl.textContent = error.message;
+  else infoEl.textContent = 'E-Mail mit Reset-Link verschickt.';
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  // onAuthStateChange übernimmt
+}
+
+/* ============================================================
+   INVITE
+   ============================================================ */
+function openInvite() {
+  document.getElementById('inviteEmail').value = '';
+  document.getElementById('inviteHint').textContent = ' ';
+  document.getElementById('inviteHint').style.color = '';
+  document.getElementById('inviteModal').classList.add('open');
+}
+function closeInvite() {
+  document.getElementById('inviteModal').classList.remove('open');
+}
+async function sendInvite() {
+  const email = document.getElementById('inviteEmail').value.trim();
+  const hint = document.getElementById('inviteHint');
+  const btn = document.getElementById('inviteSubmit');
+  if (!email) { hint.style.color = 'var(--p0)'; hint.textContent = 'Bitte E-Mail eingeben.'; return; }
+  btn.disabled = true;
+  hint.style.color = '';
+  hint.textContent = 'Sende Einladung...';
+  const { data, error } = await sb.functions.invoke('invite-user', { body: { email } });
+  btn.disabled = false;
+  if (error || !data?.ok) {
+    hint.style.color = 'var(--p0)';
+    hint.textContent = data?.error || error?.message || 'Einladung fehlgeschlagen.';
+    return;
+  }
+  hint.style.color = 'var(--p2)';
+  hint.textContent = 'Einladung an ' + email + ' verschickt.';
+  setTimeout(closeInvite, 1800);
+}
+
 /* ============================================================
    BOOT
    ============================================================ */
 initTheme();
 setView('todos');
-if (!LS.path && window.location.protocol === 'file:') {
-  document.getElementById('welcomeMsg').style.display = 'block';
-  openSettings();
-} else {
-  loadData();
-  setupRefresh();
-}
+
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    hideLogin();
+    loadData();
+    setupRefresh();
+  } else {
+    showLogin();
+  }
+})();
+
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+    if (!session) return;
+    currentUser = session.user;
+    hideLogin();
+    loadData();
+    setupRefresh();
+  } else if (event === 'SIGNED_OUT') {
+    currentUser = null;
+    if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+    masterData = { todos: [], themen: [] };
+    renderCurrentView();
+    updateNavBadges();
+    showLogin();
+  }
+});
 </script>
 
 <!-- Login -->
@@ -1045,15 +1197,17 @@ if (!LS.path && window.location.protocol === 'file:') {
       <div class="login-subtitle">To Do Liste</div>
     </div>
     <div class="login-field">
-      <label>Benutzername</label>
-      <input type="text" id="loginUser" placeholder="Benutzername" autocomplete="username"/>
+      <label>E-Mail</label>
+      <input type="email" id="loginUser" placeholder="name@example.com" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
     <div class="login-field">
       <label>Passwort</label>
       <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
-    <button class="login-btn" onclick="doLogin()">Anmelden</button>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Anmelden</button>
     <div class="login-error" id="loginError"></div>
+    <div class="login-info" id="loginInfo"></div>
+    <button class="login-link" onclick="doPasswordReset()">Passwort vergessen?</button>
   </div>
 </div>
 </body>
