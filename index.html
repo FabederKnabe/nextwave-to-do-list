@@ -12,6 +12,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--p0:oklch(0.7 0.16 25);--p1:oklch(0.78 0.13 80);--p2:oklch(0.72 0.1 200);--p3:oklch(0.7 0.08 280);--r:10px;--rl:14px;}
 [data-theme="dark"]{
+  color-scheme:dark;
   --bg:#0e0e14;--bg2:#15151d;--bg3:rgba(255,255,255,0.04);--bg-hover:rgba(255,255,255,0.05);
   --text:#ecedf0;--text2:#8b8c95;--text3:#5a5b62;
   --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
@@ -23,6 +24,7 @@
   --p0:oklch(0.7 0.16 25);--p1:oklch(0.78 0.13 80);--p2:oklch(0.72 0.1 200);--p3:oklch(0.7 0.08 280);
 }
 [data-theme="light"]{
+  color-scheme:light;
   --bg:#f5f5f8;--bg2:#ffffff;--bg3:#fbfbfd;--bg-hover:#fbfbfd;
   --text:#1a1a22;--text2:#7a7b85;--text3:#b0b1b9;
   --border:rgba(0,0,0,0.06);--border2:rgba(0,0,0,0.12);
@@ -240,6 +242,7 @@ body{
   cursor:pointer;font-family:inherit;outline:none;
 }
 .prio-select:focus{border-color:var(--accent)}
+.prio-select option,.add-row select option{background:var(--bg2);color:var(--text)}
 .del-btn{
   font-size:12px;color:var(--text2);background:transparent;
   border:1px solid var(--border);border-radius:8px;padding:6px 12px;
@@ -595,55 +598,66 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ============================================================
-   STATE — done/prio/manual/deleted bleiben in Phase 3 noch
-   in localStorage; werden in Phase 4 nach Supabase migriert.
+   STATE — gehalten in LS-Objekt (Module-Variable, nicht localStorage).
+   Wird nach Login aus todo_data Row 1 befüllt.
+   Persistierung via saveField(spalte) — schreibt nur die geänderte
+   Spalte zurück (atomar, kein Cross-User-Überschreiben anderer Felder).
    ============================================================ */
 const LS = {
-  refresh: parseInt(localStorage.getItem('nw_refresh') || '30'),
-  done: JSON.parse(localStorage.getItem('nw_done') || '{}'),
-  prio: JSON.parse(localStorage.getItem('nw_prio') || '{}'),
-  manual: JSON.parse(localStorage.getItem('nw_manual') || '[]'),
-  deleted: JSON.parse(localStorage.getItem('nw_deleted') || '{}'),
+  done: {},
+  prio: {},
+  manual: [],
+  deleted: {},
 };
-if (!Array.isArray(LS.manual)) LS.manual = [];
-if (typeof LS.deleted !== 'object' || LS.deleted === null) LS.deleted = {};
 
 let masterData = { todos: [], themen: [] };
 let statusFilter = 'open';
 let currentView = 'todos';
-let refreshTimer = null;
 let currentUser = null;
 
-function save() {
-  localStorage.setItem('nw_done', JSON.stringify(LS.done));
-  localStorage.setItem('nw_prio', JSON.stringify(LS.prio));
-  localStorage.setItem('nw_manual', JSON.stringify(LS.manual));
-  localStorage.setItem('nw_deleted', JSON.stringify(LS.deleted));
+const COL_BY_KEY = { done: 'done_state', prio: 'prio_state', manual: 'manual_entries', deleted: 'deleted_state' };
+
+async function saveField(stateKey) {
+  const col = COL_BY_KEY[stateKey];
+  if (!col) return;
+  setStatus('Speichern...', 'warn');
+  const { error } = await sb.from('todo_data').update({ [col]: LS[stateKey] }).eq('id', 1);
+  if (error) {
+    console.error('saveField', col, error);
+    setStatus('Speichern fehlgeschlagen', 'err');
+    return false;
+  }
+  setStatus('Gespeichert', '');
+  return true;
 }
+
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
 /* ============================================================
    DATA LOADING
    ============================================================ */
-async function fetchJ(f) {
-  try { const r = await fetch(f); if (r.ok) return await r.json(); } catch (e) {}
-  return null;
-}
 async function loadData() {
   setStatus('Lade...', 'warn');
-  const master = await fetchJ('master.json');
-  if (!master) {
+  const { data, error } = await sb.from('todo_data').select('master_data,manual_entries,done_state,prio_state,deleted_state,zuletzt_aktualisiert').eq('id', 1).single();
+  if (error || !data) {
+    console.error('loadData', error);
     masterData.todos = [];
     masterData.themen = [];
-    setStatus('Keine Daten', 'err');
+    setStatus('Laden fehlgeschlagen', 'err');
     renderCurrentView();
     updateNavBadges();
     return;
   }
+  const master = data.master_data || {};
   masterData.todos = [...(master.todos || []), ...(master.offene_punkte || [])];
   masterData.themen = master.themen || [];
+  LS.manual = Array.isArray(data.manual_entries) ? data.manual_entries : [];
+  LS.done = (data.done_state && typeof data.done_state === 'object') ? data.done_state : {};
+  LS.prio = (data.prio_state && typeof data.prio_state === 'object') ? data.prio_state : {};
+  LS.deleted = (data.deleted_state && typeof data.deleted_state === 'object') ? data.deleted_state : {};
   setStatus('Geladen', '');
-  document.getElementById('lastUpdate').textContent = master.zuletzt_aktualisiert ? 'Stand: ' + master.zuletzt_aktualisiert : '';
+  const stand = data.zuletzt_aktualisiert || master.zuletzt_aktualisiert || '';
+  document.getElementById('lastUpdate').textContent = stand ? 'Stand: ' + stand : '';
   renderCurrentView();
   updateNavBadges();
 }
@@ -882,21 +896,22 @@ function setFilter(f) {
 
 function toggleDone(key, btn) {
   const newVal = !LS.done[key];
-  LS.done[key] = newVal;
-  if (!newVal) delete LS.done[key];
-  // Tick animation
+  if (newVal) LS.done[key] = true; else delete LS.done[key];
   if (btn) {
     btn.classList.add('tick');
     setTimeout(() => btn.classList.remove('tick'), 400);
   }
-  save();
-  // Slight delay so the tick animation is visible before re-render
+  saveField('done');
   setTimeout(() => { renderCurrentView(); updateNavBadges(); }, 280);
 }
 
-function setPrio(key, p) { LS.prio[key] = p; save(); renderCurrentView(); }
+function setPrio(key, p) {
+  LS.prio[key] = p;
+  saveField('prio');
+  renderCurrentView();
+}
 
-function addManual() {
+async function addManual() {
   const text = document.getElementById('mText').value.trim();
   if (!text) return;
   const typ = document.getElementById('mTyp').value;
@@ -909,7 +924,8 @@ function addManual() {
   LS.manual.push(item);
   document.getElementById('mText').value = '';
   document.getElementById('mKontext').value = '';
-  save();
+  saveField('manual');
+  saveField('prio');
   updateNavBadges();
   if (typ === 'todo') setView('todos');
   else setView('themen');
@@ -920,13 +936,13 @@ function deleteTodo(key, isManual) {
   if (isManual) {
     const bare = key.replace(/^(todo_|thema_)/, '');
     LS.manual = LS.manual.filter(t => t.id !== bare);
+    saveField('manual');
   } else {
-    // For master.json items: mark as deleted so they stay hidden across reloads
     LS.deleted[key] = true;
+    saveField('deleted');
   }
-  delete LS.done[key];
-  delete LS.prio[key];
-  save();
+  if (LS.done[key]) { delete LS.done[key]; saveField('done'); }
+  if (LS.prio[key] !== undefined) { delete LS.prio[key]; saveField('prio'); }
   renderCurrentView();
   updateNavBadges();
 }
@@ -935,15 +951,15 @@ function clearAllDone() {
   const count = Object.keys(LS.done).length;
   if (count === 0) return;
   if (!confirm(`${count} erledigte Aufgaben endgültig löschen?`)) return;
-  // Mark all currently-done as deleted
   Object.keys(LS.done).forEach(key => { LS.deleted[key] = true; });
-  // Also remove manual done items
   LS.manual = LS.manual.filter(t => {
     const key = t._type === 'todo' ? tid(t) : thid(t);
     return !LS.done[key];
   });
   LS.done = {};
-  save();
+  saveField('deleted');
+  saveField('manual');
+  saveField('done');
   renderCurrentView();
   updateNavBadges();
 }
@@ -951,9 +967,9 @@ function clearAllDone() {
 function deleteManual(key) {
   const bare = key.replace(/^(todo_|thema_)/, '');
   LS.manual = LS.manual.filter(t => t.id !== bare);
-  delete LS.done[key];
-  delete LS.prio[key];
-  save();
+  saveField('manual');
+  if (LS.done[key]) { delete LS.done[key]; saveField('done'); }
+  if (LS.prio[key] !== undefined) { delete LS.prio[key]; saveField('prio'); }
   renderCurrentView();
   updateNavBadges();
 }
@@ -1024,12 +1040,8 @@ function renderCurrentView() {
 }
 
 /* ============================================================
-   AUTO-REFRESH + STATUS
+   STATUS
    ============================================================ */
-function setupRefresh() {
-  if (refreshTimer) clearInterval(refreshTimer);
-  if (LS.refresh > 0) refreshTimer = setInterval(loadData, LS.refresh * 1000);
-}
 function setStatus(msg, type) {
   document.getElementById('statusTxt').textContent = msg;
   document.getElementById('statusDot').className = 'dot' + (type ? ' ' + type : '');
@@ -1164,7 +1176,6 @@ setView('todos');
     currentUser = session.user;
     hideLogin();
     loadData();
-    setupRefresh();
   } else {
     showLogin();
   }
@@ -1173,14 +1184,14 @@ setView('todos');
 sb.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
     if (!session) return;
+    const wasLoggedIn = currentUser !== null;
     currentUser = session.user;
     hideLogin();
-    loadData();
-    setupRefresh();
+    if (!wasLoggedIn) loadData();
   } else if (event === 'SIGNED_OUT') {
     currentUser = null;
-    if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
     masterData = { todos: [], themen: [] };
+    LS.done = {}; LS.prio = {}; LS.manual = []; LS.deleted = {};
     renderCurrentView();
     updateNavBadges();
     showLogin();
