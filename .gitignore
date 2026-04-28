@@ -1,0 +1,22 @@
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local env / secrets
+.env
+.env.local
+*.local
+
+# Logs
+*.log
+
+# Node (falls später ein Build-Step kommt)
+node_modules/
+dist/

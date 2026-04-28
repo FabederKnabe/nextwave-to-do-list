@@ -1,0 +1,1163 @@
+{
+  "zuletzt_aktualisiert": "27.04.2026 15:56",
+  "todos": [
+    {
+      "id": "call-20260427-001",
+      "text": "PR #613 approven und auf Main mergen",
+      "kontext": "Versionierung und CloudMD-Fixes sind fertig, warten auf Approval",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-002",
+      "text": "PR #614 Konflikt in Claude MD lösen und mergen",
+      "kontext": "Konflikt muss vor Merge behoben werden, dann parallel zu #613 durchführen",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-003",
+      "text": "Git-Tag nach Merge auf Main manuell setzen",
+      "kontext": "Versionierungsworkflow: one-time manual tag command, dokumentiert in CloudMD",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-004",
+      "text": "Security-Issues beheben: Source Map Exposed und JavaScript Source öffentlich",
+      "kontext": "Sophia (Security Agent) hat diese Schwachstellen in PR #613 gefunden",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-005",
+      "text": "Automatischen Security-Workflow einrichten: Sophia prüft nach jedem Merge und erstellt Issues für LeadDev",
+      "kontext": "Soll manuelle Security-Reviews ersetzen und kontinuierliche Qualitätssicherung gewährleisten",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-006",
+      "text": "Filter-UI vereinheitlichen: Ausgangsrechnungen-Filter wie Eingangsrechnungen (Kästchen statt Dropdown)",
+      "kontext": "Aktuell haben Ausgangs- und Eingangsrechnungen unterschiedliche Filter-Darstellungen, soll einheitlich sein",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-007",
+      "text": "Workflow Angebot → Rechnung implementieren: Konvertierungsbutton direkt im Angebot",
+      "kontext": "Angenommene Angebote sollen per Klick in Rechnung umgewandelt werden, danach automatisch archiviert",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-008",
+      "text": "Angebote-Archivierung implementieren: manuell und automatisch nach Konvertierung",
+      "kontext": "Verhindert endlose Angebotslisten; angenommene und konvertierte Angebote sollen aus der aktiven Liste verschwinden",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-009",
+      "text": "Monatsexport für Rechnungen bauen (alle Rechnungen eines Zeitraums als Download)",
+      "kontext": "Iris braucht monatliche Exportfunktion für Steuerberatung – kein Einzelexport jeder Rechnung",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-010",
+      "text": "Zeitraumfilter für Rechnungen implementieren (z.B. nach Monat, Quartal)",
+      "kontext": "Aktuell fehlt ein Datumsbereich-Filter; für Steuerberatung und Übersicht benötigt",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-011",
+      "text": "Dashboard: 'Überfällig'-Feld für Rechnungen hinzufügen, verknüpft mit Zahlungsziel-Datum",
+      "kontext": "Aktuell gibt es keine Überfällig-Ansicht; Superbase-Feature, wird nach Main-Deploy aktiv",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-012",
+      "text": "Zahlungsziel aus Einstellungen automatisch in Ausgangsrechnungen übernehmen",
+      "kontext": "Handwerker haben meistens ein Standard-Zahlungsziel (14 oder 30 Tage); soll nicht manuell pro Rechnung gesetzt werden müssen",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-013",
+      "text": "Kundenadresse automatisch in Rechnung eintragen wenn Kunde ausgewählt wird",
+      "kontext": "Aktuell muss Adresse manuell eingegeben werden; soll aus Kundenstamm automatisch befüllt werden",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-014",
+      "text": "E-Mail-Template: craftmaster.io Branding und Kontrast korrigieren",
+      "kontext": "In Einladungs-E-Mails steht noch altes craftmaster.io Branding ohne korrekte Darstellung",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-015",
+      "text": "Kalkulations-Dashboard: UI verfeinern und Felder als anklickbare Filter nutzbar machen",
+      "kontext": "Z.B. Klick auf 'Offene Forderungen' soll gefilterte Liste zeigen; Einheitlichkeit mit restlichem Dashboard",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-016",
+      "text": "Superbase/DWLab Aufräumaktion planen und durchführen vor Go-Live",
+      "kontext": "Alle Testdaten und veraltete Einträge müssen bereinigt werden bevor craftmaster.io offiziell wird",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-017",
+      "text": "Paperclip-Einladungsflow testen mit verschiedenen E-Mail-Adressen nach Main-Deploy",
+      "kontext": "Einladung per Link klappt grundsätzlich, aber Edge-Case wenn User bereits eingeloggt ist macht Probleme",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-018",
+      "text": "OCR-Erkennung für Eingangsrechnungen auf Feature-Liste setzen (Beträge und Steuern automatisch erkennen)",
+      "kontext": "Iris wünscht sich Funktionalität wie Lexware: Scan einer Rechnung → automatische Felderfüllung",
+      "deadline": null,
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "email-20260409-001",
+      "text": "pnpm-Migration validieren und umsetzen",
+      "kontext": "Iris schlägt vor, von npm auf pnpm zu wechseln, da aktuell eine gefährliche Inkonsistenz besteht: Repo und CI laufen auf npm, die Agenten sollen aber auf pnpm laufen. Der Wechsel soll auf einem eigenen Branch 'chore/migrate-to-pnpm' erfolgen: package-lock.json entfernen, pnpm-lock.yaml erzeugen, packageManager in package.json setzen und GitHub Actions auf pnpm umstellen. Scope bewusst klein halten — keine Dependency-Upgrades, keine Refactorings, nur die reine Tooling-Migration. Iris passt Agenten & Scripts auf ihrer Seite an.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-002",
+      "text": "PR #582 reviewen und mergen",
+      "kontext": "Taja (Test Engineer Agent) hat in Phase 1 die Testinfrastruktur aufgebaut: 78 neue Unit Tests geschrieben und die CI-Pipeline repariert. PR #582 liegt bereit und wartet auf Fabians Review. Nach dem Merge startet Phase 2. Das ist der nächste konkrete Schritt in der Agents-Strategie.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-003",
+      "text": "typecheck-Script in package.json ergänzen",
+      "kontext": "Iris hat festgestellt, dass ein typecheck-Script in package.json fehlt. Es soll im Zuge der pnpm-Migration oder zeitnah danach ergänzt werden, um TypeScript-Checks standardisiert aufrufbar zu machen — wichtig für CI-Stabilität und die Agenten-Pipeline.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-004",
+      "text": "check:no-select-star auf supabase/functions/ erweitern",
+      "kontext": "Der bestehende check:no-select-star-Script prüft aktuell nicht den Ordner supabase/functions/. Iris schlägt vor, diesen Check zu erweitern, damit auch Edge Functions auf SELECT * geprüft werden — relevant für Datensicherheit und Performance in der Supabase-Infrastruktur.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-005",
+      "text": "security-guards.yml um check:cors-wildcard und check:edge-config ergänzen",
+      "kontext": "Die security-guards.yml soll um zwei neue Checks erweitert werden: check:cors-wildcard (erkennt unsichere CORS-Konfigurationen) und check:edge-config (prüft Edge-Config-Sicherheit). Sophia (Security Agent) scannt bereits auf CORS-Fehler — dieser Check soll die CI-Pipeline entsprechend absichern.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-006",
+      "text": "Bio-Lehmhaus MVP vorbereiten",
+      "kontext": "Jan (Bio-Lehmhaus) ist ein neuer Kunde mit einem Excel-basierten Kalkulationssystem (Massezusammenstellung → Materialliste → Angebot). Ziel ist eine eigenständige Software mit KI-Angebotsgenerierung — kein Craftmaster-Feature, sondern ein eigenes Produkt das berechnet werden kann. Iris schreibt Jan mit Fabi in CC, um die Excel-Datei anzufordern. Fabi soll die Zusammenhänge analysieren, ein Konzept entwickeln wie KI daraus Angebote erstellt, und eine kleine Demo für nächste Woche vorbereiten. Perspektivisch: Internationalisierung (USA, Indien).",
+      "deadline": "nächste Woche",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-007",
+      "text": "Chat-Feature gegen echte Supabase-Datenbank testen",
+      "kontext": "Der eigene Messenger (WhatsApp-ähnlich, projektbasiert, mit Historie, 25MB Upload) ist fertig gebaut — wurde aber noch nicht gegen die echte Supabase-Datenbank getestet. Fabi soll den Test durchführen, Bugs dokumentieren und beheben. Die automatische Chat-Erstellung bei Projekt-Erstellung wenn Kontakte hinzugefügt werden muss dabei ebenfalls validiert werden.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-008",
+      "text": "Kalenderwochen einbauen",
+      "kontext": "Im Kalender fehlen noch die Kalenderwochen-Anzeige. Laut Call vom 07.04. ist der Kalender ansonsten schon weit: Doppelklick auf Tag funktioniert, Datum frei wählbar, Uhrzeit automatisch bei Klick. Kalenderwochen sind ein kleiner aber für Handwerker relevanter Fix, da sie häufig wochenbasiert planen.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-009",
+      "text": "Feiertage im Kalender anzeigen",
+      "kontext": "Die Feiertagsdaten sind laut Iris bereits in den Unternehmenseinstellungen vorhanden — sie müssen nur noch im Kalender angezeigt werden. Kein großer Aufwand, aber wichtig für die Urlaubsplanung und Einsatzplanung in Handwerksbetrieben.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-010",
+      "text": "Jahres-Sprung im Kalender einbauen",
+      "kontext": "Aktuell kann man im Kalender nur Monat für Monat navigieren. Iris hat angemerkt, dass ein Jahres-Sprung fehlt — ohne den muss man bei Bedarf viele Monate durchklicken. Kleiner Fix mit großem UX-Effekt.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-011",
+      "text": "Kontakte-Modul umbauen",
+      "kontext": "Alle Kontakte sollen unter einem einheitlichen Modul zusammengeführt werden, mit Labels (Kunde, Interessent, Lieferant, Partner, Gewerk) statt Unterkategorien. Interessent wird automatisch zu Kunde wenn ein Projekt angelegt wird. Aktuell gibt es 3 Partner-Inseln die zusammengeführt werden müssen. Filter statt Unterkategorien als UX-Ansatz.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-012",
+      "text": "Custom Zeittypen in Admin-Einstellungen implementieren",
+      "kontext": "Ein Kunde möchte z.B. 'Telefonat' als eigene Zeitart erfassen. Lösung: Custom-Felder in den Admin-Einstellungen, mandantenspezifisch gespeichert. Dadurch können verschiedene Betriebe ihre eigenen Zeitkategorien definieren ohne dass Craftmaster selbst diese pflegen muss.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-013",
+      "text": "Listenansicht auf alle Module übertragen",
+      "kontext": "Das Konzept 'schmale Liste links, Arbeitsfläche rechts' ist bei Projekten bereits umgesetzt und funktioniert gut. Iris möchte, dass diese Listenansicht auf alle anderen Module übertragen wird — einheitliches UX-Pattern durch die gesamte App.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-014",
+      "text": "Branding prüfen — Craftplaner statt Craftmaster bei Fabi",
+      "kontext": "Iris hat festgestellt, dass bei Fabi in der App noch 'Craftplaner' statt 'Craftmaster' steht — möglicherweise beim letzten Merge verloren gegangen. Das Branding war bereits im Call vom 31.03. großflächig (30-40 Einträge) geändert worden. Fabi soll prüfen wo die alten Bezeichnungen noch auftauchen und sie korrigieren.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-015",
+      "text": "Sentry-Alternative vorschlagen",
+      "kontext": "Iris möchte Sentry als Monitoring-Tool ersetzen und hat Fabi bereits im Call vom 24.03. gebeten, eine Alternative vorzuschlagen. Das Thema ist seitdem offen geblieben und taucht in den Dauerthemen auf. Fabi soll Alternativen recherchieren und Iris einen konkreten Vorschlag machen.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-016",
+      "text": "Lovable-API ersetzen",
+      "kontext": "Die KI-Funktion für Beschreibungen und Zeiten ist über Lovable verankert, aber die API gibt es in der genutzten Form nicht mehr. Fabi muss eine kostengünstige oder kostenlose Alternative finden und einbinden. Das Thema wurde im Call vom 02.04. identifiziert — noch keine Lösung gefunden.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-017",
+      "text": "Rate-Limits bei allen KI-APIs einbauen",
+      "kontext": "Bei jeder eingebundenen KI-API muss ein Rate-Limit gesetzt werden (z.B. max. 5 Aufrufe pro 5 Minuten). Ohne Rate-Limiting drohen massive Kosten bei Bot-Angriffen oder unbeabsichtigten Endlosschleifen. Diese Regel gilt ab sofort beim Einbinden jeder neuen KI-API — bestehende APIs müssen ebenfalls nachgerüstet werden.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-018",
+      "text": "Partnerportal umbenennen zu 'Partnerverwaltung'",
+      "kontext": "Im Call vom 31.03. wurde beschlossen, das Partnerportal in 'Partnerverwaltung' umzubenennen. Die technischen Fixes am Portal wurden bereits gemacht (Invite-Links, Firmenname in E-Mail, Status-Update, automatische Kontaktanlage). Die Umbenennung selbst ist noch offen.",
+      "deadline": null,
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260413-001",
+      "text": "Portal-Implementierung auf V1-Scope reduzieren",
+      "kontext": "Iris hat den Scope des Kunden-/Partnerportals grundlegend vereinfacht: V1 enthält nur Chat + Dokumente (Upload/Download). Keine Projektübersicht, keine Budgetverfolgung, keine Freigabe-Workflows. Die bestehende RLS-Isolation (Bauherr, Gewerk, Architekt etc. sehen nur ihren eigenen Chat) bleibt vollständig unangetastet. Vor dem nächsten Call klären ob das ein Refactoring der bestehenden Portal-Seite (/kunden-login) bedeutet oder ob neue Komponenten für Gewerke/Architekten neu aufgebaut werden.",
+      "deadline": "vor nächstem Call",
+      "quelle": "E-Mail 13.04.2026"
+    },
+    {
+      "id": "call-20260413-001",
+      "text": "Stammmodul-Sicherheitsmechanismus in Massmaster einbauen",
+      "kontext": "Im Call wurde diskutiert, dass die Stammmodule (aus den Excel-Dateien übernommene Basismodule) nicht versehentlich geändert oder gelöscht werden sollten. Entschieden: Beim Ändern oder Löschen eines Stammmoduls muss der User den Modulnamen nochmal eintippen, um die Aktion zu bestätigen — analog zum 'Datenbankname eintippen' bei Datenbankenlöschen. Hintergrund: Iris befürchtet versehentliche Klicks, die unbemerkt die Berechnungsgrundlage verfälschen. Kein Passwort, nur Namensbestätigung als Sicherheitsstufe.",
+      "deadline": null,
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260413-002",
+      "text": "Hover-Farbe im Kalender ändern (nicht grün)",
+      "kontext": "Beim Testen des neuen Kalenders ist aufgefallen, dass sowohl der aktive Tag als auch alle Hover-Felder grün eingefärbt werden — was optisch verwirrend wirkt, weil gleichzeitig mehrere Felder grün erscheinen. Iris hat das explizit bemängelt und befürchtet Verwirrung bei Mitarbeitenden ('drei Felder gleichzeitig grün'). Die Hover-Farbe soll auf eine andere, klar unterscheidbare Farbe umgestellt werden.",
+      "deadline": null,
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260413-003",
+      "text": "Wetter-API in den Kalender einbinden",
+      "kontext": "Im Call kurz angesprochen: der Kalender soll künftig Wetterdaten anzeigen können — dafür muss eine Wetter-API dahinter gelegt werden. Fabian hat das explizit als To-do für heute genannt. Noch kein konkreter API-Anbieter besprochen. Wichtig für Handwerksbetriebe, die wetterabhängig planen (Außenarbeiten, Materiallieferungen etc.).",
+      "deadline": null,
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260413-004",
+      "text": "Frau Scheider wegen vollständiger Massmaster-Daten kontaktieren (Jan in CC)",
+      "kontext": "Für das Massmaster-MVP fehlen noch vollständige End-zu-End-Daten — der komplette Workflow vom Planungstool über die Massenberechnung bis zur Endabrechnung. Iris kennt die Situation beim Kunden: Jan (Chef) hat die Übersicht, aber wenig Zeit; Frau Scheider hat mehr Zeit, aber weniger technisches Wissen. Iris schreibt Frau Scheider heute noch und setzt Jan in CC. Fabian soll ebenfalls erwähnt werden, damit Frau Scheider bei Rückfragen direkt an Fabian schreiben kann.",
+      "deadline": "13.04.2026",
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260413-005",
+      "text": "PR #595 (Kalender-Updates) auf Develop mergen",
+      "kontext": "Iris hat den Kalender-PR #595 im Call live angeschaut und abgenommen. Der PR enthält alle Kalender-Updates: Kalenderwochen in Wochen- und Tagesansicht, bundeslandspezifische Feiertage (einmalige Einstellung in Unternehmenseinstellungen), Jahres- und Monatsnavigation. Nach Iris' Approval soll Fabian den PR auf Develop mergen. Danach merged Iris Develop auf Main.",
+      "deadline": null,
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260413-006",
+      "text": "Develop auf Main mergen (nach PR #595)",
+      "kontext": "Sobald Fabian den Kalender-PR #595 auf Develop gemergt hat, soll Iris den aktuellen Develop-Stand auf Main mergen. Das ist Iris' Aufgabe laut Rollenaufteilung — Fabian erstellt und merged PRs auf Develop, Iris übernimmt den Develop-auf-Main-Merge. Diesen Schritt erst angehen, wenn Fabians Merge auf Develop bestätigt ist.",
+      "deadline": null,
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260413-007",
+      "text": "Paperclip-Zugang und Instruction-File an Iris schicken",
+      "kontext": "Fabian hat Paperclip (Agenten-Orchestrierungstool) bereits produktiv im Einsatz und ist damit zufrieden — die Agenten kommunizieren miteinander, was gut funktioniert. Er hat außerdem einen kleinen Instruction-File erstellt, der erklärt wie man neue Agenten anlegt. Beides — den Paperclip-Account-Zugang und den Instruction-File — soll er an Iris schicken, damit sie sich das System anschauen kann.",
+      "deadline": null,
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260413-008",
+      "text": "Honorar an Fabian überweisen",
+      "kontext": "Iris hat zugesagt, Fabian das ausstehende Honorar zu überweisen, sobald Geld auf ihrem Konto eingegangen ist. Sie geht davon aus, dass die Überweisung diese Woche klappt. Keine konkrete Summe im Call genannt.",
+      "deadline": "diese Woche",
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260413-009",
+      "text": "Craftmaster Trial-Zugang einrichten (kostenlose Testphase, 14-30 Tage)",
+      "kontext": "Um neue Kunden zu gewinnen, soll ein kostenloser Trial-Zugang eingerichtet werden. Voraussetzungen: Sicherheitsmechanismen gegen Bot-Registrierungen (E-Mail-Verifizierung o.Ä.), KI-Feature-Zugang reglementieren um API-Kosten zu kontrollieren. Aktuell läuft Gemini als API (~1 Mio. Tokens/Tag kostenlos). Fabian prüft ob ein Unternehmens-API-Konto sinnvoll ist. Trial-Accounts sollen auf duplizierten Testdaten aus der SuperBase arbeiten — nicht auf Produktionsdaten. Trial-Accounts die älter als X Tage sind, können automatisch gelöscht werden.",
+      "deadline": null,
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260413-010",
+      "text": "5 Testdatensätze für Craftmaster Trial erstellen",
+      "kontext": "Für den Trial-Zugang müssen realistische, branchenspezifische Testdaten bereitstehen, damit neue Nutzer sofort sehen wie das Tool funktioniert — ohne selbst erst Daten einpflegen zu müssen. Iris will 5 Datensätze erstellen (Angebot, Rechnung, Auftragsbestätigung). Die Testdaten sollen idealerweise aus der bestehenden SuperBase dupliziert werden, damit Trial-Accounts in einer sauberen Testumgebung arbeiten.",
+      "deadline": null,
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260413-011",
+      "text": "Craftmaster-Architekturkonzept als KI-Plattform erarbeiten und Iris zum Review geben",
+      "kontext": "Fabian erarbeitet das architektonische Konzept für Craftmaster als umfassende KI-Plattform für Handwerksunternehmen. Vision: der komplette Prozess von Angebot bis Zusatzauftrag soll KI-gestützt sein. Dazu nutzt Fabian Paperclip als Orchestrierungstool. Das fertige Konzept soll Iris als Technical Review übergeben werden, bevor Fabian mit der Server-Infrastruktur beginnt. Fabian übernimmt dabei den Server- und Infrastruktur-Part.",
+      "deadline": null,
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260413-012",
+      "text": "Fördergelder für Craftmaster recherchieren und beantragen",
+      "kontext": "Fabian will Fördergelder beantragen — mindestens 10.000 Euro angepeilt. Die Zusammenarbeit mit Bio-Lehmhaus könnte helfen, da ein nachgewiesenes Kundenprojekt die Förderchancen verbessert. Konkrete Förderprogramme müssen noch recherchiert werden. Keine konkrete Deadline, aber Fabian will das angehen.",
+      "deadline": null,
+      "quelle": "Call 13.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260415-001",
+      "text": "AI-Plattform Zwei-Schicht-Architektur konzipieren",
+      "kontext": "Iris arbeitet an der AI-Plattform-Strategie für craftmaster.io. Das Konzept sieht ein Zwei-Layer-System vor: Layer 1 ist ein auf Kundendaten trainiertes Modell (z.B. historische Preisdaten, Materialkataloge von Bodenbelag-Herstellern etc.), Layer 2 ist ein vortrainiertes LLM für Textgenerierung. Die Herausforderung ist, dass jeder Kunde individuelle Daten hat und man nichts vorbereiten kann, bevor man die Kunden kennt. Iris überlegt, historische Branchendaten zu sammeln (z.B. Quadratmeterpreise Bodenverlegen = Arbeitszeit × Stundensatz + Material × Fläche) als Trainingsgrundlage, die dann mit kundenspezifischen Daten ergänzt wird.",
+      "deadline": null,
+      "quelle": "Call 15.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260415-002",
+      "text": "craftmaster.info Website neu erstellen",
+      "kontext": "Die App soll eine eigene Website unter craftmaster.info bekommen. Iris hat die Domain bereits und nutzt Lovable für schnelle Prototypen, ist aber mit den Ergebnissen unzufrieden — alles sieht gleich aus. Er sucht nach Inspiration, findet aber wenig (US-Websites sind laut ihm besonders schlecht). Fabian merkt an, dass die Seite nicht perfekt sein muss, solange klar wird worum es geht. Fabian hat sich nicht explizit freiwillig gemeldet, aber Iris hat scherzhaft vorgeschlagen, dass sie es machen könnte.",
+      "deadline": null,
+      "quelle": "Call 15.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260415-003",
+      "text": "Frau Scheider nochmals kontaktieren",
+      "kontext": "Iris wartet auf eine Antwort von Frau Scheider (Kundin/Interessentin). Er hat ihr bereits geschrieben, Fabian aber nicht in CC gesetzt. Ohne ihre Rückmeldung kann ein bestimmtes Projekt nicht weitergehen. Iris will nochmal nachfassen, damit sie auch wirklich antwortet.",
+      "deadline": null,
+      "quelle": "Call 15.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260415-004",
+      "text": "Craftmaster neu deployen",
+      "kontext": "Iris fragt, ob Fabian Craftmaster bereits neu deployed hat — das ist noch nicht passiert. Fabian soll das machen, sobald alles getestet ist. Fabian sitzt gerade noch am Massmaster und will erst dort alles fertig testen, bevor sie zu Craftmaster wechselt.",
+      "deadline": null,
+      "quelle": "Call 15.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260415-005",
+      "text": "Massmaster Standardmodule absichern und Kopierfunktion implementieren",
+      "kontext": "Fabian arbeitet aktuell am Massmaster: Der Papierkob-Button und Stift-Button werden aus der Hauptübersicht der Standardmodule entfernt. Bearbeiten geht nur noch über Einstellungen mit extra Bestätigungsdialog — eine zusätzliche Sicherheitsstufe. Außerdem wird eine Kopierfunktion für Module implementiert, damit kleine Änderungen nicht am Stammmodul gemacht werden müssen, sondern über ein Duplikat. War fast fertig zum Zeitpunkt des Calls.",
+      "deadline": null,
+      "quelle": "Call 15.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260415-006",
+      "text": "Massmaster durchentesten und dann Craftmaster + Level-Up fortsetzen",
+      "kontext": "Fabian hat einen Testplan erstellt und Testautomatismen erstellen lassen. Nach Abschluss der Massmaster-Tests lässt sie das Projekt liegen bis neuer Kunden-Input kommt, wechselt dann zu Craftmaster und anschließend zu Level-Up. Wenn alles funktioniert, geht es auf den Main-Branch.",
+      "deadline": null,
+      "quelle": "Call 15.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260415-007",
+      "text": "pnpm-Migration und offene Punkte diese Woche angehen",
+      "kontext": "Fabian hat sich vorgenommen, diese Woche (KW 16) das NPM-zu-pnpm-Thema anzugehen sowie einige andere kleinere offene Punkte zu erledigen, damit man insgesamt ein gutes Stück vorankommt.",
+      "deadline": "KW 16 (13.–17.04.2026)",
+      "quelle": "Call 15.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260415-008",
+      "text": "Demo-Version auf Main-Branch implementieren",
+      "kontext": "Iris und Fabian haben diskutiert, ob die Demo-Version als Fork oder auf dem bestehenden Main-Repository aufgebaut werden soll. Entscheidung: Auf Main implementieren, weil es dann viel einfacher ist, Demo-Nutzer nach der 20-Tage-Testphase in eine Vollversion zu konvertieren (Datenübernahme). Die Demo-relevanten Daten werden über Supabase mit einem Demo-Flag getrennt und können mit einem Klick gelöscht werden.",
+      "deadline": null,
+      "quelle": "Call 15.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260415-009",
+      "text": "Ollama mit Gemma 4 auf dem Server einrichten",
+      "kontext": "Für die Demo-Version soll ein lokal gehostetes LLM genutzt werden, um Token-Kosten zu vermeiden — gerade am Anfang werden nicht tausende Nutzer erwartet. Gemma 4 (von Google) wurde als geeignetes, relativ kleines Modell identifiziert. Iris installiert Ollama auf dem Server und lässt Gemma 4 darüber laufen. Das passt auch zur langfristigen Strategie, lokale LLMs einzusetzen.",
+      "deadline": null,
+      "quelle": "Call 15.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260415-010",
+      "text": "Gewerbeschau am 9./10. Mai vorbereiten — Stand beim Fensterbauer anfragen",
+      "kontext": "Im Ort findet am 9./10. Mai eine Gewerbeschau statt. Ein großer Fensterbauer (Hunderte Mitarbeiter, zwei Werke) ist dort vertreten und Iris kennt die Assistentin der Geschäftsführung persönlich (Nachbarin). Iris überlegt, dort einen Stand zu haben — ähnlich wie ein Freund, der Infrastruktur-Dienstleistungen anbietet und sich bei einem lokalen Unternehmen einquartiert hat. Dafür braucht er eine perfekt funktionierende Software mit realistischen Demodaten (mehrere Projekte, Mitarbeitende) und eine funktionierende Kunden- plus Partner-Ansicht (Handy = Partner, Tablet/PC = Kunde).",
+      "deadline": "09.05.2026",
+      "quelle": "Call 15.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "call-20260415-011",
+      "text": "Wochenend-Update an Fabian schicken",
+      "kontext": "Beide haben vereinbart, sich am Wochenende gegenseitig ein Update zum aktuellen Stand zu schicken — Iris zu seinen Fortschritten bei AI-Plattform/Website/Demo, Fabian zu Massmaster-Tests und pnpm-Migration.",
+      "deadline": "18./19.04.2026",
+      "quelle": "Call 15.04.2026",
+      "erledigt": false
+    },
+    {
+      "id": "email-20260422-001",
+      "text": "craftmaster.info Website-Layout von Iris entgegennehmen und Testaccount-Feature umsetzen",
+      "kontext": "Iris hat ein neues Layout für craftmaster.info gebaut und stellt es Fabian zur Verfügung. Sie arbeitet weiter daran, damit beim Umsetzen des Testaccount-Features alles bereit ist. Fabian soll das Layout entgegennehmen, reviewen und das Testaccount-Feature implementieren — danach kann die Seite live gehen.",
+      "deadline": null,
+      "quelle": "E-Mail 22.04.2026"
+    },
+    {
+      "id": "email-20260422-002",
+      "text": "Security-Maßnahmen für Paperclip-Infrastruktur umsetzen",
+      "kontext": "Ein OpenClaw-Artikel hat gezeigt, dass die Angriffsfläche noch zu groß ist. Iris hat vier Prioritäten identifiziert: (1) Paperclip-UI per IP-Whitelist via Caddy sperren (~30 Min), (2) Filesystem-Isolation pro Agent (~60 Min), (3) GitHub-App pro Agent (Prio 2, ~60 Min), (4) Prompt-Injection-Hardening (Prio 5, ~45 Min). Alternativ: ADR-0008 Defense-in-Depth schreiben und strukturiert abarbeiten.",
+      "deadline": "morgen",
+      "quelle": "E-Mail 22.04.2026"
+    },
+    {
+      "id": "call-20260422-001",
+      "text": "Schreiner-Unternehmen morgen anrufen und Termin ausmachen",
+      "kontext": "Jan hat einen Kontakt zu einem Schreiner-Unternehmen (40 Jahre alt, Küchen und Zubehör) gegeben, Iris ist in CC. Der Anruf soll am Donnerstag 23.04.2026 erfolgen. Im Termin soll abgesteckt werden: aktueller Digitalisierungsstand, welche Tools sie nutzen, welcher Bedarf besteht und wohin sie wollen.",
+      "deadline": "23.04.2026",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-002",
+      "text": "Branch-Aufräumen: nur noch Develop/Main behalten, Feature-Branches löschen",
+      "kontext": "Iris hat bestätigt, dass die Branches 'Feature Iris' und 'Feature Branch' gelöscht werden können. Neue Konvention: nur Develop und Main dauerhaft, jede neue Arbeit bekommt einen eigenen Feature-Branch, der nach dem Merge sofort gelöscht wird. Soll unmittelbar umgesetzt werden.",
+      "deadline": null,
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-003",
+      "text": "Versionierung in Craftmaster einführen (Start: Version 1.00)",
+      "kontext": "Aktuell gibt es keine Versionierung. Fabian soll den aktuellen Main-Stand als Version 1.00 markieren und ein System für Releases (1.2) und Hotfixes (1.2.1) einführen. Ob zusätzlich Feature-Flagging genutzt wird, ist Fabians Entscheidung. Ziel: mehr Professionalität und Transparenz über den Live-Stand.",
+      "deadline": null,
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-004",
+      "text": "Offene Pull Requests sichten und aufräumen",
+      "kontext": "Es liegen diverse offene PRs im Repository, u.a. Dependabot-Updates (Tailwind Merge, Versionsbumps) und ein PR 594, an dessen Ursprung Iris sich nicht mehr erinnert. Fabian soll sichten, mergen oder schließen, damit die PR-Liste sauber ist.",
+      "deadline": null,
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-005",
+      "text": "PR auf Main pushen (Craftmaster-Branch)",
+      "kontext": "Fabian sagt zu, spätestens am Sonntag 26.04.2026 einen PR zu machen und bis Montag 27.04.2026 den Branch auf Main zu pushen. Das ist kritisch, weil Iris am Montag die User (mindestens Eva) im neuen Setting anlegen muss und am Dienstag 28.04.2026 beim Jan-Termin die Demo funktionieren muss.",
+      "deadline": "27.04.2026",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-006",
+      "text": "User (mindestens Eva) im neuen Craftmaster-Setting anlegen",
+      "kontext": "Nach dem Main-Push durch Fabian soll Iris am Montag 27.04.2026 die User anlegen. Eva ist auf jeden Fall dabei. Das neue Setting ist layout- und UI-technisch überarbeitet. Voraussetzung ist, dass Fabians PR rechtzeitig durch ist.",
+      "deadline": "27.04.2026",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-007",
+      "text": "Demo-Version Craftmaster für Dienstag fertigstellen",
+      "kontext": "Bis zum Jan-Termin am Dienstag 28.04.2026 in Pforzheim muss die Demo auf Main funktionieren. Iris wird sie dort zeigen. Fabian sollte dabei nicht zu viel reinpacken, damit der Kunde nicht denkt, das Produkt sei fertig – aber das Vorhandene muss verlässlich laufen.",
+      "deadline": "28.04.2026",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-008",
+      "text": "Schwiegerkusinen-Firma vorab anlegen und Demo vorbereiten",
+      "kontext": "Iris plant am Dienstag 28.04.2026 einen Besuch bei ihrer Schwiegerkusine (ca. 25 Mitarbeitende, sehr niedriger Digitalisierungsgrad – aktuell nur Stundenerfassung via Galer, vorher Taschenrechner-Büro). Die Firma soll so angelegt präsentiert werden, dass ein Nein schwerfällt. Geplant ist ein Monat Testphase.",
+      "deadline": "28.04.2026",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-009",
+      "text": "Strategie staatliche Digitalisierungsförderung für Jan erarbeiten",
+      "kontext": "Iris will für Jan einen Plan ausarbeiten, wie er eine staatliche Digitalisierungsförderung beantragt. Ziel: Die Hemmschwelle senken (z.B. aus 80.000 Euro Gesamtkosten werden 40.000 nach Förderung). Als Alternative sind monatliche Raten (z.B. 1000 Euro über 40 Monate) denkbar. Soll erarbeitet und Jan vorgelegt werden, damit er sich eingeladen fühlt.",
+      "deadline": null,
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-010",
+      "text": "Website-Entwurf (Claude Design) mit Iris sharen",
+      "kontext": "Fabian hat in Claude Design einen ersten Website-Entwurf für die Trennung Craftmaster/nextWAVE Digital erstellt (Lila/Lime, drei Pläne, innovative Vergleichsmatrix). Er will den Entwurf mit Iris teilen, damit sie ihn in Ruhe anschauen kann. Keine Eile, aber zeitnah.",
+      "deadline": null,
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-011",
+      "text": "Accessibility/Kontrast auf der Website verbessern",
+      "kontext": "Im aktuellen Entwurf steht Text teilweise schwarz auf Lila, was zu wenig Kontrast hat. Iris weist darauf hin, dass weiß auf Lila sichtbar besser ist. Generell sollte die Website accessibility-technisch besser werden.",
+      "deadline": null,
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-012",
+      "text": "nextWAVE-Digital-API-Key für Craftmaster-KI vorbereiten",
+      "kontext": "Fabian hat für die Craftmaster-KI-Funktionen aktuell seinen eigenen API-Key hinterlegt, nur zu Testzwecken. Für den produktiven Betrieb soll ein dedizierter nextWAVE-Digital-API-Key eingerichtet und umgestellt werden. Aktuell nicht dringend, aber perspektivisch.",
+      "deadline": null,
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-013",
+      "text": "Agent-Übersicht dokumentieren (Rollen, Workflow, Zugangsdaten)",
+      "kontext": "Fabian baut gerade mehrere Agents auf (Lead Developer Agent, Bugsnag-Mattermost-Kette etc.). Sobald der Aufbau abgeschlossen ist, soll Iris eine Übersicht erhalten: welcher Agent macht was, welcher Workflow greift wann, und die nötigen Zugangsdaten. Derzeit bewusst noch nicht vollständig dokumentiert, um Iris nicht zu überfrachten.",
+      "deadline": null,
+      "quelle": "Call 22.04.2026"
+    }
+  ],
+  "offene_punkte": [
+    {
+      "id": "call-20260427-op-001",
+      "text": "Paperclip Multi-Tenant: Einladungsflow funktioniert nicht wenn User bereits eingeloggt ist",
+      "kontext": "Wenn jemand bereits in Craftmaster eingeloggt ist und einen Einladungslink öffnet, passiert nichts Sinnvolles. Lösung (neue Session aufmachen) noch nicht implementiert.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-op-002",
+      "text": "'Überfällig'-Feld im Dashboard zeigt noch nicht korrekt an",
+      "kontext": "Feature ist gebaut, aber abhängig von Superbase-Daten die erst nach Main-Deploy verfügbar sind. Muss nach Merge erneut getestet werden.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-op-003",
+      "text": "Partner-Einladung via Kontakte-Modul noch nicht vollständig funktional",
+      "kontext": "Einladungsbutton ist vorhanden, wurde in der Demo aber als 'funktioniert noch nicht' beschrieben. Muss debuggt werden.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-op-004",
+      "text": "Push-Benachrichtigungen für Angebots-Deadlines und überfällige Rechnungen – Konzept offen",
+      "kontext": "Iris hat klare Vorstellung (Kalender-Eintrag + Push am Deadline-Tag), technische Umsetzung noch nicht besprochen.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-op-005",
+      "text": "Kalkulations-Woche: komplettes Kalkulations-Modul soll diese Woche fertiggestellt werden",
+      "kontext": "Iris hat explizit gesagt 'das müssen wir die Woche noch machen' – ist das Herzstück des Systems für Handwerksbetriebe.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "email-20260409-001",
+      "text": "Paperclip-Account von Iris erhalten",
+      "kontext": "Iris hat angekündigt, Fabian morgen den Account-Zugang zu Paperclip zu schicken. Noch unklar wofür Paperclip genau eingesetzt werden soll — auf die E-Mail warten und dann entscheiden ob und wie es in die bestehende Infrastruktur integriert wird.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-002",
+      "text": "Weitere Agents definieren und beauftragen",
+      "kontext": "Iris hat signalisiert, dass weitere Agents folgen werden. Fabian soll sich überlegen, ob ihm etwas fehlt, auffällt oder welche Agenten noch gebraucht werden. Die aktuelle Basis (Cloe, Kim, Quentin, Taja, Tommy, Sophia) deckt Koordination, Dev, QA, Testing, Doku und Security ab — was fehlt noch?",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-003",
+      "text": "Team-E-Mails (Ionos/Mailbox.org) funktionieren seit Wochen nicht",
+      "kontext": "Seit dem Call vom 24.03. sind die Team-E-Mail-Einladungen nicht funktionsfähig — ein interner Serverfehler war die erste Ursache. Das Problem taucht in den Dauerthemen über alle 5 Calls auf und ist bis heute nicht gelöst. Iris wollte es nochmal versuchen — Status unklar.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-004",
+      "text": "Kommunikationskanal noch nicht entschieden",
+      "kontext": "WhatsApp wurde ausgeschlossen. Signal, Mattermost und eine EU-konforme Slack-Alternative stehen zur Diskussion. Iris sucht eine Lösung mit API-Unterstützung für Chatbots. Das Thema ist seit dem ersten Call (24.03.) offen und taucht in den Dauerthemen auf — keine Entscheidung bisher.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-005",
+      "text": "E2E-Tests (Playwright) in GitHub Actions fehlen komplett",
+      "kontext": "Playwright-Tests für End-to-End-Testing fehlen in der CI-Pipeline vollständig. Kein akuter Handlungsbedarf laut Iris, aber langfristig zu fixen. Taja (Test Agent) hat Unit Tests gebaut — E2E bleibt offen.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-006",
+      "text": "Geocode/Standort Edge Function — sporadisch 401/406",
+      "kontext": "Die Geocode Edge Function wirft sporadisch 401/406-Fehler. Im Call vom 31.03. war sie kurz gefixt, hat dann aber im Call selbst wieder versagt. JWT-Authentifizierung wurde als Ursache vermutet und entfernt — muss nochmal geprüft werden. Tritt immer wieder auf und ist langfristig zu lösen.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-007",
+      "text": "Merge-Konflikte zwischen Fabi und Iris — Ursache unklar",
+      "kontext": "Es gab mehrfach Merge-Chaos, möglicherweise weil Features auf Main statt auf Develop gepusht wurden. CLAUDE.md-Regel (nur auf develop pushen) wurde als Workaround eingeführt. Die eigentliche Ursache ist zwischen Fabi und Iris noch nicht vollständig geklärt. Iris' GitHub-Deploy-Problem mit zwei falschen Accounts (GB-Account + CI nextwave) hängt möglicherweise zusammen.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-008",
+      "text": "Hetzner AI-Server Setup — Details unklar",
+      "kontext": "Iris hat im Call vom 02.04. begonnen, einen AI-Server auf Hetzner aufzusetzen. Details wurden im Transkript abgeschnitten. Status und Zweck des Servers sind noch unklar — Iris hält Fabi auf dem Laufenden.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-009",
+      "text": "Chat: End-to-End-Verschlüsselung noch nicht umgesetzt",
+      "kontext": "Der eigene Messenger ist technisch fertig, aber E2E-Verschlüsselung wurde noch nicht besprochen oder implementiert. Bei Skalierung auf 100+ Firmen wird das sicherheitsrelevant. Aktuell kein Blocker, aber vor dem Launch in größerem Rahmen zu klären.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-010",
+      "text": "Bio-Lehmhaus: Excel-Datei von Jan noch nicht erhalten",
+      "kontext": "Iris schreibt Jan (Bio-Lehmhaus) mit Fabi in CC, um die Excel-Datei mit dem Kalkulationssystem anzufordern. Ohne die Excel kann Fabi das MVP-Konzept nicht entwickeln. Auf die E-Mail warten und dann mit der Analyse starten.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-011",
+      "text": "Partner deaktivieren — bewusst nach hinten geschoben",
+      "kontext": "Die Funktion zum Deaktivieren von Partnern wurde in den Calls mehrfach erwähnt aber bewusst deprioritisiert. Kein akuter Bedarf, aber irgendwann umzusetzen.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260413-001",
+      "text": "Portal Dokumente: Berechtigungskonzept noch unklar",
+      "kontext": "Im V1-Portal soll es einen eigenen Dokumente-Ordner neben dem Chat geben. Noch nicht geklärt ist das Berechtigungskonzept: Sieht jede Rolle (Bauherr, Gewerk, Architekt) nur ihre eigenen Dokumente, oder gibt es projektweite Dokumente die alle Rollen sehen können? Entscheidet die RLS-Logik oder braucht es ein separates Konzept?",
+      "quelle": "E-Mail 13.04.2026"
+    },
+    {
+      "id": "email-20260413-002",
+      "text": "Portal /kunden-login: Refactoring oder Neu-Aufbau?",
+      "kontext": "Die bestehende Portal-Seite /kunden-login ist aktuell auf Kunden ausgelegt. Für den V1-Scope (Chat + Dokumente für alle Rollen: Bauherr, Gewerk, Architekt) ist noch unklar ob ein Refactoring der bestehenden Seite ausreicht oder ob für Gewerke/Architekten eine neue Struktur aufgebaut werden muss. Vor dem nächsten Call analysieren und Entscheidung treffen.",
+      "quelle": "E-Mail 13.04.2026"
+    },
+    {
+      "id": "call-20260413-op-001",
+      "text": "Hosting-Entscheidung für Massmaster noch offen (SuperBase vs. lokaler Server vs. Hetzner)",
+      "kontext": "Der Kunde (Jan, Bio-Lehmhaus) hat einen eigenen lokalen Server im Büro, auf den alle PCs im Netzwerk zugreifen können. Optionen: (a) SuperBase als Hosted-Service — einfachste Lösung, aber international ausgerichtete Kunden könnten ablehnen; (b) Hosting auf dem lokalen Server des Kunden — keine Abhängigkeit von externen Diensten, aber Updates schwierig; (c) Hetzner-Server mit SQL-Datenbank als Kompromiss. Entscheidung muss mit Jan / Frau Scheider abgestimmt werden.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260413-op-002",
+      "text": "Vollständige End-zu-End-Stammdaten für Massmaster noch ausstehend",
+      "kontext": "Die aktuelle Demo läuft auf Daten aus den bereits erhaltenen Excel-Dateien. Es fehlen aber die vollständigen Daten des kompletten Workflows: vom Planungstool über die Massenberechnung bis zur finalen Abrechnung. Iris schreibt Frau Scheider heute (13.04.) noch — Daten könnten bis morgen oder übermorgen kommen. Ohne vollständige Daten kann die Berechnungslogik nicht vollständig validiert werden.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260413-op-003",
+      "text": "Angebotserstellung direkt aus Massmaster — noch nicht implementiert",
+      "kontext": "Die logische nächste Stufe nach dem Massmaster-MVP wäre, direkt aus der App heraus ein Angebot erstellen zu können. Fabian und Iris haben kurz diskutiert ob man dafür KI braucht oder ob es rein rechnerisch lösbar ist (da alle Preise fest hinterlegt sind). Noch kein konkreter Plan — erst nach MVP-Abnahme durch den Kunden angehen.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260413-op-004",
+      "text": "Changelog-Funktion des Technical Writer Agents funktioniert noch nicht",
+      "kontext": "Der Technical Writer Agent (im Docs-Bereich des GitHub-Repos) soll bei neuen Releases automatisch einen Changelog generieren, damit Kunden über Änderungen informiert werden können. Diese Funktion ist laut Fabian noch nicht funktionsfähig. User Manuals im Docs-Bereich sind außerdem veraltet und müssen durch den Agenten neu erstellt werden.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260415-op-001",
+      "text": "KI-Training mit Kundendaten — Architektur und Datenbeschaffung ungeklärt",
+      "kontext": "Das Zwei-Schicht-KI-Konzept steht grob, aber die konkrete Umsetzung ist noch offen: Wie trainiert man kundenspezifische Modelle, wenn man die Kunden noch nicht kennt? Iris überlegt, historische Branchendaten (Materialkataloge, Standardpreise) als Basis zu nutzen und dann mit echten Kundendaten zu ergänzen. Das ist alles noch rein konzeptionell und muss weiter durchdacht werden.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-op-002",
+      "text": "Antwort von Frau Scheider steht aus",
+      "kontext": "Iris hat Frau Scheider geschrieben (Fabian nicht in CC), aber noch keine Antwort erhalten. Ohne ihre Rückmeldung kann das entsprechende Projekt nicht weitergehen. Unklar ob sie nicht da ist oder einfach nicht geantwortet hat.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-op-003",
+      "text": "Datenbank-Migration Status unklar",
+      "kontext": "Im Call wird erwähnt, dass eine Datenbank-Migration in Review steht (Supabase/Base Deposit). Iris fragt ob das schon erledigt ist — Fabian bestätigt, dass es noch nicht gemacht wurde. Der genaue Status und nächste Schritte müssen geklärt werden.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-op-004",
+      "text": "Termin nächste Woche Montag oder Mittwoch?",
+      "kontext": "Fabian hat am Montag (20.04.) Urlaub wegen Geburtstag ihrer Partnerin, ist aber theoretisch tagsüber verfügbar für einen Call um 16 Uhr. Alternativ kann der Call auf Mittwoch verschoben werden. Noch nicht final entschieden — sie schreiben sich noch.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-op-005",
+      "text": "E-Mail-Integration und Textgenerator-Feature noch nicht priorisiert",
+      "kontext": "Im Gespräch kam die Idee eines Texterstellers/E-Mail-Generators auf — Handwerker geben Stichpunkte ein, KI macht einen professionellen Text daraus. Auch E-Mail-Integration (Gmail, Microsoft, oder besser Mailbox.org) wurde angesprochen. Krafthub AI wurde als Wettbewerber erwähnt, der ähnliche Features hat. Diese Features sind noch nicht eingeplant, könnten aber für die Demo oder das Produkt relevant sein.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "email-20260422-001",
+      "text": "Neuer Akquise-Kontakt von Jan (Biolehmhaus) — Iris kontaktiert morgen",
+      "kontext": "Jan von Biolehmhaus GmbH hat Iris einen Kontakt gegeben, der Interesse an einer Zusammenarbeit bekundet hat. Iris schreibt heute noch eine E-Mail und ruft morgen an. Ergebnis abwarten — könnte ein neuer Kunde werden.",
+      "quelle": "E-Mail 22.04.2026"
+    },
+    {
+      "id": "email-20260422-002",
+      "text": "ADR-0008 Defense-in-Depth schreiben oder Security-Punkte direkt abarbeiten?",
+      "kontext": "Iris hat die vier Security-Prioritäten identifiziert, aber noch nicht entschieden ob erst ADR-0008 geschrieben wird (strukturierter Ansatz) oder direkt mit den Maßnahmen begonnen wird. Entscheidung steht aus.",
+      "quelle": "E-Mail 22.04.2026"
+    },
+    {
+      "id": "call-20260422-001",
+      "text": "Preismodell für Jan-Projekt (Einmalzahlung vs. monatliche Raten)",
+      "kontext": "Realistische Projektkosten liegen bei ca. 120.000 Euro, das ist für Jan zu hoch. Offen ist, wie das finanziert wird: staatliche Förderung, monatliche Raten (z.B. 1000 Euro über 40 Monate), kleinerer Scope – wird Iris gemeinsam mit Jan besprechen, sobald die Förderstrategie steht.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-002",
+      "text": "Scope der Craftmaster-Demo: Was zeigen, was zurückhalten?",
+      "kontext": "Noch offen, wie viel Demo-Material Iris beim Jan-Termin und bei der Schwiegerkusine zeigen darf. Fabian will vermeiden, dass der Kunde den Eindruck bekommt, das Produkt sei fertig. Konkrete Grenze ist noch nicht definiert – muss bis spätestens zum Dienstagstermin geklärt sein.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-003",
+      "text": "Herkunft von PR 594 klären",
+      "kontext": "Iris hat einen PR (Nr. 594) erstellt, erinnert sich aber nicht mehr an den Inhalt. Fabian soll sich den PR ansehen und mit Iris abstimmen, ob er geschlossen, gemergt oder überarbeitet werden soll.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-004",
+      "text": "Umgang mit Dependabot-Updates (Versionsbumps)",
+      "kontext": "Im Repository liegen mehrere automatische Versions-Updates (z.B. Tailwind Merge). Offen, wie diese gehandhabt werden: automatisches Mergen, regelmäßiges Review-Intervall oder manuelle Prüfung. Sollte Teil des Branch-Cleanups von Fabian werden.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-005",
+      "text": "Finale Farbwahl Website (außer Lila/Lime)",
+      "kontext": "Im Claude-Design-Entwurf sind Lila und Lime gesetzt. Schwarz/Gelb wie Hero und Türkis (Plancraft) sowie Grau/Orange (ein weiteres Tool) sind bereits vergeben. Andere Farbvarianten sind noch möglich, sollen aber erst festgelegt werden, wenn der Gesamtentwurf reviewt wurde.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-006",
+      "text": "Feature-Flagging als Teil der Versionierung?",
+      "kontext": "Fabian hat sich noch nicht entschieden, ob zur neuen Versionierung auch Feature-Flags eingeführt werden. Iris hat es ihm freigestellt, sinnvoll wäre es perspektivisch für kontrollierte Rollouts. Entscheidung offen.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-007",
+      "text": "Massmaster vor Präsentation gründlich testen",
+      "kontext": "Fabian hat Massmaster bereits getestet, Iris deutlich weniger. Bis zur Präsentation bei Jan und der Schwiegerkusine (Dienstag 28.04.2026) soll das System stabil sein. Welche konkreten Tests noch nötig sind, ist nicht definiert – Fabian sieht keine offenen Bedenken, aber ein Sanity-Check vor dem Termin ist empfohlen.",
+      "quelle": "Call 22.04.2026"
+    }
+  ],
+  "themen": [
+    {
+      "id": "call-20260427-t-001",
+      "titel": "PR #613 und #614 – Merge auf Main",
+      "details": "PR #613 (Versionierung/CloudMD-Fixes) wartet auf Approval. Nach dem Merge muss manuell ein Git-Tag gesetzt werden (dokumentiert in CloudMD). PR #614 hat noch einen Konflikt in Claude MD. Beide PRs sollen zeitnah auf Main gemergt werden.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-t-002",
+      "titel": "Security-Agent Sophia – erste Schwachstellen gefunden",
+      "details": "Sophia (Security Analyst Agent) hat den Code analysiert und Schwachstellen gefunden: Source Map Exposed und JavaScript Source öffentlich sowie einige Choir-Einträge. Fabian plant, einen weiteren Agenten darauf loszulassen, der automatisch Issues erstellt. Workflow: Sophia prüft nach jedem Merge automatisch und erstellt Issues für den LeadDev.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-t-003",
+      "titel": "Paperclip / Multi-Tenant Onboarding",
+      "details": "Fabian hat Paperclip (Multi-Tenant-System) zum Laufen gebracht und Iris einen Login gegeben. Das Onboarding-Flow hat technische Probleme: Der X-Button zum Schließen funktioniert nicht, kein Team-Signal vorhanden. Das Problem ist bekannt und nicht kritisch, wird später behoben.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-t-004",
+      "titel": "DWLab / Superbase Aufräumaktion vor Go-Live",
+      "details": "Superbase liegt alles zugrunde (alle Versionen). Vor dem offiziellen Go-Live muss eine große Aufräumaktion im Superbase gestartet werden.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-t-005",
+      "titel": "Kontakte-Modul (Kunden, Lieferanten, Partner)",
+      "details": "Alles bisher Doppelte und Einzelne wurde unter 'Kontakte' zusammengefasst. Partner können direkt über Kontakte eingeladen werden. Die Partner-Einladung per E-Mail wurde getestet – der Status wechselt von 'eingeladen' auf 'aktiv' sobald angenommen. Feature funktioniert grundsätzlich.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-t-006",
+      "titel": "Rechnungsmodul – Verbesserungen und fehlende Features",
+      "details": "Detailansicht öffnet sich beim Klick direkt. Shortcuts zum Markieren (angemahnt, bezahlt) vorhanden. Bezahlt-Markierung wirkt sich automatisch auf das Dashboard aus. Filter-UI zwischen Ausgangs- und Eingangsrechnungen ist noch uneinheitlich (Kästchen vs. Dropdown) und soll vereinheitlicht werden. Fehlt noch: Monatsexport für Steuerberatung, Zeitraumfilter und automatische Zahlungsziel-Verknüpfung.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-t-007",
+      "titel": "Angebote-Modul – Workflow und Archivierung",
+      "details": "Workflow Angebot → Rechnung (Konvertierungsbutton) fehlt noch. Angebote sollen archivierbar sein – manuell und automatisch nach Konvertierung zu einer Rechnung. Filter-UI soll einheitlich wie bei Rechnungen sein. Feature-Idee: Deadline pro Angebot mit Push-Benachrichtigung zur Nachfass-Erinnerung.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-t-008",
+      "titel": "Dashboard und Kalkulations-Dashboard",
+      "details": "Dashboard zeigt Umsatz, Forderungen, Angebote. Gesamtwert bei Angeboten ist wichtig für Planung. Fehlend: 'Überfällig'-Feld für Rechnungen (kommt nach Main-Deploy, da Superbase-abhängig). Kalkulations-Dashboard soll UI-mäßig weiter verfeinert werden. Felder sollen anklickbar sein als Filter (z.B. 'Offene Forderungen' klicken → gefilterte Liste).",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-t-009",
+      "titel": "Mahnwesen / Zahlungsziel-Automatisierung",
+      "details": "Vision: Zahlungsziel aus Einstellungen automatisch in Ausgangsrechnungen übernehmen. Dashboard zeigt 'Offene Rechnungen' und 'Überfällige Rechnungen'. Push-Benachrichtigungen bei Überfälligkeit. Ziel: Handwerker brauchen sich nicht mehr manuell um Mahnungen zu kümmern.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-t-010",
+      "titel": "OCR / Automatische Belegerfassung (Feature-Idee)",
+      "details": "Eingangsrechnungen können bereits als JPEG, PNG, PDF importiert werden. Iris wünscht sich perspektivisch automatische Erkennung von Beträgen, Umsatzsteuer etc. (wie Lexware). Wurde als Feature auf die Zwischenliste gesetzt.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-t-011",
+      "titel": "E-Mail-Template / craftmaster.io Branding",
+      "details": "In der Einladungs-E-Mail steht noch 'craftmaster.io' ohne korrekte Branding-Anpassung. Kontrast-Problem. Muss korrigiert werden.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "call-20260427-t-012",
+      "titel": "Kundenadresse automatisch in Rechnung übernehmen",
+      "details": "Wenn ein Kunde in einer Rechnung ausgewählt wird, soll die Adresse automatisch befüllt werden. Feature noch nicht implementiert.",
+      "quelle": "Call 27.04.2026"
+    },
+    {
+      "id": "email-20260409-001",
+      "titel": "pnpm-Migration",
+      "details": "Iris schlägt sauberen Wechsel von npm auf pnpm vor. Begründung: Phantom Dependencies verhindern, reproduzierbare Builds für CI, bessere Skalierungsbasis für Monorepo/mehrere Services, schnellere CI. Scope: nur Tooling, keine Dependency-Upgrades.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-002",
+      "titel": "Agentenbasiertes Unternehmen — 6 Agents live",
+      "details": "nextWAVE läuft jetzt als agentenbasiertes Unternehmen. Cloe (Chief of Staff), Kim (Lead Developer), Quentin (QA), Taja (Test Engineer), Tommy (Technical Writer), Sophia (Security Analyst) sind alle live auf eigenem Server. Routine-Coding, Testing, Doku und Security-Checks laufen automatisch.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-003",
+      "titel": "CI-Pipeline repariert + 78 neue Unit Tests (PR #582)",
+      "details": "Taja hat in Phase 1 die Testinfrastruktur aufgebaut: 78 Unit Tests geschrieben, CI-Pipeline repariert. PR #582 liegt für Review bereit. Nach Merge beginnt Phase 2.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-004",
+      "titel": "Rollenaufteilung Fabi & Iris beschlossen (24.03.2026)",
+      "details": "Fabi = technischer Part (Code, Tools, Übersicht). Iris = Strategie, Kunde, Akquise. Weniger gegenseitiges Reinpfuschen ab sofort. Klare Abgrenzung auch bei Agentic Engineering vs. Vibe Coding — Vibe Coding ist No-Go.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-005",
+      "titel": "Bio-Lehmhaus — neues eigenständiges Produkt",
+      "details": "Jan (Bio-Lehmhaus) hat ein Excel-basiertes Kalkulationssystem (Massezusammenstellung → Materialliste → Angebot). Ziel: eigenständige Software mit KI-Angebotsgenerierung, kein Craftmaster-Feature. Kann berechnet werden. MVP-Demo nächste Woche. Perspektivisch: Internationalisierung (USA, Indien).",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-006",
+      "titel": "Eigener Chat-Messenger fertig gebaut",
+      "details": "WhatsApp-ähnliche Oberfläche, projektbasiert, mit Historie, 25MB Upload. Kein externes Tool (Datensicherheit). Automatische Chat-Erstellung bei Projekt-Erstellung wenn Kontakte hinzugefügt werden. Noch nicht gegen Supabase getestet.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-007",
+      "titel": "KI-Agenten Vision — modulspezifisch",
+      "details": "Modulspezifische Agenten als Chat-Widget in jedem Modul (z.B. Karla für Kalkulation, Material-Agent). Nicht ein Allzweck-ChatGPT, sondern spezialisiert mit Kundendaten. Karla bleibt, wird erweitert. Mittelfristig nach Chat-Fertigstellung und Sommerurlaub.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-008",
+      "titel": "Neue nextWAVE-Website",
+      "details": "Iris arbeitet an der neuen Website. Struktur: nextWAVE als Dach, Craftmaster darunter. Iris ist auf einer Gewerbemesse Ende Mai — Außenauftritt und Kundengewinnung als Fokus.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-009",
+      "titel": "Vision: Craftmaster X — Tenant-basierte KI",
+      "details": "Langfristige Vision: Jeder Kunde bekommt eigenes LLM und eigene Daten (Tenant-basierte KI). Iris sieht Craftmaster 2 Jahre vor Plancraft in diesem Thema.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-010",
+      "titel": "CLAUDE.md: nur auf develop pushen",
+      "details": "Als Reaktion auf Merge-Chaos wurde in CLAUDE.md festgeschrieben, dass immer nur auf 'develop' gepusht wird. Fabi erstellt PRs per Terminal. Vor jedem Arbeitsbeginn: git pull --rebase origin main.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-011",
+      "titel": "Rate-Limits bei KI-APIs als Pflicht",
+      "details": "Bei jeder eingebundenen KI-API muss ein Rate-Limit gesetzt werden (z.B. max. 5 Aufrufe / 5 Minuten). Ohne Rate-Limiting drohen massive Kosten bei Bot-Angriffen. Regel gilt ab sofort beim Einbinden jeder neuen API.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-012",
+      "titel": "Branding: CraftPlaner → CraftMaster (März 2026)",
+      "details": "Über 30-40 Einträge wurden umbenannt. URL bleibt vorerst. Beim letzten Merge möglicherweise teilweise verloren gegangen — bei Fabi steht noch Craftplaner.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-013",
+      "titel": "Jahresplanung 2026",
+      "details": "Ziel: Chat fertig vor Sommerferien. Fabi Urlaub ab 29. Juni (3 Wochen). Danach KI-Agenten. Keine wochenweise Planung — schauen wie weit man kommt. Erster Kunde startete ~Anfang April.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-014",
+      "titel": "UGC-Video Social Media",
+      "details": "Über Fiverr für ~200€ erstellt. TikTok als Kanal angedacht. Iris fokussiert auf Außenauftritt.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260409-015",
+      "titel": "Benachrichtigungssystem eingebaut",
+      "details": "Einstellungen pro User (in-App / E-Mail). Kategorien: Urlaubsanträge, Nachrichten, fehlende Zeiterfassung (Default 24h, Admin einstellbar), Partner-Einladungen, überfällige Rechnungen.",
+      "quelle": "E-Mail 09.04.2026"
+    },
+    {
+      "id": "email-20260413-001",
+      "titel": "Kunden-/Partnerportal — Scope-Reduktion auf V1",
+      "details": "Iris hat die Portalvision vereinfacht. V1: nur Chat + Dokumente (Upload/Download), einheitlicher Kommunikationskanal statt E-Mail-Chaos. RLS-Isolation (Bauherr/Gewerk/Architekt) bleibt. V2-Ausblick: Freigabe von Nachtragsangeboten, Budgetverfolgung, weitere Features nach User-Feedback.",
+      "quelle": "E-Mail 13.04.2026"
+    },
+    {
+      "id": "call-20260413-t-001",
+      "titel": "Massmaster MVP — Demo für Iris",
+      "details": "Fabian hat das Massmaster-MVP live demonstriert: Startseite mit Projektübersicht, Suche und Filterung (aktiv/abgeschlossen/in Planung), integrierte Datenbank (Boden, Wand, Zubehör, Service, Module), Massenermittlung mit automatischer Berechnung der Bestell- und Baumengen basierend auf VPE-Einheiten, Exportfunktion (Drucken). Light/Dark Mode eingebaut. Alle Daten aus den Excel-Dateien wurden via Claude gescannt und lokal gecacht. Iris zeigte sich begeistert vom Ergebnis.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260413-t-002",
+      "titel": "Kalender-Update vollständig: KW, Feiertage, Jahresnavigation",
+      "details": "Der überarbeitete Kalender wurde präsentiert: Kalenderwochen erscheinen jetzt in Wochen- und Tagesansicht. Feiertage sind bundeslandspezifisch hinterlegt (einmalige Einstellung in Unternehmenseinstellungen, danach automatisch geladen). Jahres- und Monatsnavigation eingebaut, Daten für die nächsten Jahre hinterlegt. Dashboard-Widget wurde ebenfalls aktualisiert. Offen: Hover-Farbe (grün irritiert) und Wetter-API.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260413-t-003",
+      "titel": "Agenten-System: Paperclip als Orchestrierungstool",
+      "details": "Fabian arbeitet aktiv mit Paperclip — einem Agenten-Orchestrierungstool, bei dem Agenten miteinander kommunizieren. Er ist damit zufrieden, verfeinert das System aber noch. Ziel: Sales Agent und vollständige Unternehmensorganisation über Agenten. Fabian schickt Iris Zugang und einen selbst erstellten Instruction-File für neue Agenten.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260413-t-004",
+      "titel": "Craftmaster Vision: vollständige KI-Plattform für Handwerksunternehmen",
+      "details": "Fabian formuliert die Vision: Craftmaster soll eine KI-Plattform werden, die den kompletten Prozess von A bis Z abdeckt — von der Angebotserstellung bis zum Zusatzauftrag. Das architektonische Konzept erarbeitet Fabian mit Hilfe von Agenten und gibt es dann Iris zum Technical Review, bevor die Server-Infrastruktur aufgebaut wird.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260413-t-005",
+      "titel": "Cowork-Automatisierung: OBS-Call → To-do-Liste",
+      "details": "Fabian hat seinen kompletten Call-Verarbeitungsprozess automatisiert: OBS nimmt auf, ein Cowork-Script erkennt neue MP4, konvertiert zu MP3, transkribiert mit Python/Whisper und schreibt Zusammenfassung + To-dos in eine Web-App (To-do-Liste). OBS-Start noch manuell, alles andere läuft automatisch ab 17 Uhr. Iris war beeindruckt und möchte das Setup irgendwann im Detail erklärt bekommen.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260413-t-006",
+      "titel": "Craftmaster Trial-Zugang und Beta-Strategie",
+      "details": "Diskussion über kostenlosen Trial-Zugang (14-30 Tage) um neue Kunden zu gewinnen. Anforderungen: Bot-Schutz, KI-Rate-Limiting, Testdaten bereitstellen damit User sofort loslegen können. Gemini API aktuell hinterlegt (~1 Mio. Tokens/Tag kostenlos). Unternehmens-API-Konto wird geprüft. Iris und Fabian sind sich einig: Trial ist der nächste wichtige Schritt zur Kundengewinnung.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260413-t-007",
+      "titel": "GitHub PR-Management und Technical Writer Agent",
+      "details": "Offene PRs (Test-Base 2, Test-MTI) können gelöscht/geschlossen werden. PR #595 (Kalender) bereit zum Merge. Technical Writer Agent erstellt Architekturübersicht und aktualisiert Docs automatisch bei jedem PR. Changelog-Funktion noch nicht funktionsfähig. User Manuals veraltet, sollen durch Agenten neu erstellt werden. README noch leer.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260413-t-008",
+      "titel": "Fördergelder für Craftmaster",
+      "details": "Fabian will Fördergelder beantragen — mindestens 10.000 Euro als Ziel. Die Zusammenarbeit mit Bio-Lehmhaus (nachgewiesenes Kundenprojekt) könnte die Förderchancen verbessern. Auch die Kooperation mit weiteren Kunden (z.B. Schwägerin) als potenzielle Referenz erwähnt.",
+      "quelle": "Call 13.04.2026"
+    },
+    {
+      "id": "call-20260415-t-001",
+      "titel": "AI-Plattform Zwei-Schicht-Architektur",
+      "details": "Iris arbeitet auf ihrem Branch an der AI-Plattform. Konzept: Layer 1 = kundenspezifisch trainiertes Modell (historische Daten, Materialkataloge), Layer 2 = vortrainiertes LLM für Textgenerierung. Aktuell noch konzeptionell, es werden erstmal Dateien angelegt.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-t-002",
+      "titel": "Website craftmaster.info",
+      "details": "Iris will die App-Website neu erstellen unter craftmaster.info. Nutzt Lovable für Prototypen, ist aber unzufrieden mit der Kreativität. Sucht Inspiration, findet wenig Gutes. Fabian findet: muss nicht perfekt aussehen, solange klar ist worum es geht.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-t-003",
+      "titel": "Massmaster — Standardmodule und Kopierfunktion",
+      "details": "Fabian implementiert Sicherheitsstufen für Standardmodule: Delete/Edit-Buttons raus aus der Hauptübersicht, nur über Einstellungen mit Bestätigung bearbeitbar. Neue Kopierfunktion für Module, damit Änderungen nicht am Original gemacht werden. Testplan und Testautomatismus erstellt.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-t-004",
+      "titel": "Demo-Version — Main vs. Fork Entscheidung",
+      "details": "Diskussion ob Demo auf Fork oder Main: Entscheidung für Main, weil Conversion einfacher ist (Datenübernahme nach Testphase). Demo-Daten werden über Supabase mit Demo-Flag getrennt. Ein-Klick-Löschung der Demo-Daten möglich.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-t-005",
+      "titel": "Lokales LLM mit Ollama + Gemma 4",
+      "details": "Für die Demo-Version soll ein lokal gehostetes LLM genutzt werden (Ollama + Gemma 4), um Token-Kosten zu sparen. Passt zur langfristigen Strategie. Iris richtet das auf dem Server ein.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-t-006",
+      "titel": "Wettbewerber Krafthub AI",
+      "details": "Fabian hat Krafthub AI entdeckt — ein Wettbewerber der ähnliche KI-Features für Handwerker anbietet: KI-Angebotserstellung, KI-E-Mail-Generator, Stundenzettel etc. Die Seite ist gut umgesetzt. Bestätigt die Marktrichtung von craftmaster.io.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-t-007",
+      "titel": "Gewerbeschau 9./10. Mai — Präsentationsmöglichkeit",
+      "details": "Iris überlegt, bei der lokalen Gewerbeschau am 9./10. Mai einen Stand beim großen Fensterbauer zu haben. Sie kennt die Assistentin der Geschäftsführung. Dafür braucht sie perfekte Software mit realistischen Demodaten und funktionierende Kunden-/Partner-Ansichten.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-t-008",
+      "titel": "Textgenerator und E-Mail-Integration",
+      "details": "Feature-Idee: Handwerker geben Stichpunkte ein, KI generiert professionelle Texte/E-Mails. Anwendungsfall: Handwerker die gut arbeiten aber schlecht schreiben. Auch E-Mail-Integration (Gmail/Microsoft/Mailbox.org) wurde besprochen, ist aber noch nicht priorisiert.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-t-009",
+      "titel": "Fabians Zweiter Draft — kleine Korrekturen",
+      "details": "Iris hat Fabians zweiten Draft kurz gelesen. Es gibt nur 2-3 kleine Korrekturpunkte, technisch hat sich nichts geändert. Fabian arbeitet die Punkte selbständig ab.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "call-20260415-t-010",
+      "titel": "Nächster Call — Montag vs. Mittwoch",
+      "details": "Fabian hat am Montag 20.04. Urlaub (Geburtstag ihrer Partnerin wird 41). Sie ist aber tagsüber verfügbar, Gäste kommen erst abends. Call könnte um 16 Uhr bleiben, früher sein, oder auf Mittwoch verschoben werden. Noch offen.",
+      "quelle": "Call 15.04.2026"
+    },
+    {
+      "id": "email-20260422-001",
+      "titel": "craftmaster.info — neues Website-Layout gebaut",
+      "details": "Iris hat ein neues Layout für craftmaster.info erstellt und stellt es Fabian zur Verfügung. Nächster gemeinsamer Meilenstein ist das Testaccount-Feature, danach kann die Seite live gehen.",
+      "quelle": "E-Mail 22.04.2026"
+    },
+    {
+      "id": "email-20260422-002",
+      "titel": "AI Agents — Knowledge Phase B live (/knowledge Slash-Command)",
+      "details": "Der /knowledge-Slash-Command in Mattermost ist aktiv. Er durchsucht /home/paperclip/nextwave-knowledge/ per grep und liefert Top-Treffer als ephemere Nachricht mit klickbaren GitHub-Links. Token-gesichert. Cloes Instructions um Knowledge-First-Prinzip erweitert.",
+      "quelle": "E-Mail 22.04.2026"
+    },
+    {
+      "id": "email-20260422-003",
+      "titel": "AI Agents — Bugsink Error-Feedback-Loop geschlossen",
+      "details": "Bugsink sendet jetzt zwei parallele Webhooks: einen in den Mattermost #bugs-Kanal für Menschen, einen direkt an Paperclip der ein Issue bei Kim erstellt. Kims Issue-Body enthält direkten Link zum Stacktrace + Ablauf-Anleitung. URL-Secret-Auth mit timing-safe Vergleich.",
+      "quelle": "E-Mail 22.04.2026"
+    },
+    {
+      "id": "email-20260422-004",
+      "titel": "AI Agents — Model-Kostenoptimierung (50–70% Ersparnis erwartet)",
+      "details": "5 Agenten von Sonnet 4.6 auf Haiku 4.5/4.6 umgestellt: Quentin, Tommy, Gloria, Vito, Taja. Opus 4.6 bleibt nur bei Kim & Alex (Produktiv-Code). Sonnet 4.6 bei Anna, Sophia, Paul, Maja (Reasoning). Cloe bereits gestern auf Haiku. 3 neue ADRs gemerged (ADR-0005 Knowledge-Base, ADR-0006 Bugsink, ADR-0007 Model-Selection). Bridge bei v11, 13 Automations live.",
+      "quelle": "E-Mail 22.04.2026"
+    },
+    {
+      "id": "email-20260422-005",
+      "titel": "Security — Angriffsfläche zu groß, 4 Prioritäten identifiziert",
+      "details": "OpenClaw-Artikel hat Handlungsbedarf aufgezeigt. Priorisiert: Paperclip-UI IP-Whitelist (Caddy, ~30 Min), Filesystem-Isolation pro Agent (~60 Min), GitHub-App pro Agent (~60 Min), Prompt-Injection-Hardening (~45 Min). Alternativ ADR-0008 Defense-in-Depth als strukturierter Ansatz.",
+      "quelle": "E-Mail 22.04.2026"
+    },
+    {
+      "id": "email-20260422-006",
+      "titel": "Akquise — Termin bei Jan (Biolehmhaus) + Naumann GaLa-Bau am Dienstag",
+      "details": "Iris hat Dienstag Vormittag einen Termin bei Jan (Biolehmhaus) zur MassMaster-Strategie — grundsätzlicher Markt vorhanden laut Recherche. Außerdem Termin bei Naumann GaLa-Bau (~25 MA): nutzen Zeiterfassung-Tool, kein Büro-Tool, alles über Excel/Word — konkretes Potenzial für Craftmaster.",
+      "quelle": "E-Mail 22.04.2026"
+    },
+    {
+      "id": "call-20260422-001",
+      "titel": "Website-Redesign mit Claude Design Tool",
+      "details": "Fabian arbeitet an der Website-Trennung von Craftmaster und nextWAVE Digital und nutzt dafür erstmals das neue Tool Claude Design von Anthropic. Das Design verwendet die Farben Lila und Lime und wirkt moderner als die bisherige Version; die Schriftart gefällt beiden. Aufbau umfasst drei Pläne (Basis, Pro, Plus), eine innovative Vergleichsmatrix (zeigt ab welchem Abo welche Features verfügbar sind), Dashboard-Mockup und eine übersichtliche Kontaktseite. Fabian kann die Designs direkt an Claude Code zur Umsetzung übergeben.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-002",
+      "titel": "Akquise: Schreiner-Unternehmen über Jan",
+      "details": "Jan hat Iris (CC: Fabian) einen Kontakt zu einem Schreiner-Unternehmen gegeben, das Küchen und Zubehör fertigt und seit 40 Jahren existiert. Das Unternehmen hat erkennbaren Bedarf an Digitalisierung. Iris wird morgen (23.04.2026) anrufen, um einen Termin auszumachen, bei dem der digitale Status, aktuelle Tools und Ziele abgesteckt werden.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-003",
+      "titel": "Kostenschätzung Jan-Projekt (Massmaster)",
+      "details": "Die vollständige Umsetzung des Jan-Projekts würde laut Iris' ChatGPT-Sparring bei ca. 120.000 Euro liegen bei 6-12 Monaten Entwicklungszeit. Das ist realistisch für den Umfang, aber für Jan unbezahlbar. Ziel ist daher nicht, ein CAD/Design-Tool zu ersetzen, sondern nur die 40 Excel-Listen zu digitalisieren und das planerische einfacher zu machen – in einem Framework von wenigen Wochen umsetzbar. Jan braucht aktuell 4 Stunden für eine Excel-Massenberechnung.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-004",
+      "titel": "Staatliche Digitalisierungsförderung für Jan",
+      "details": "Iris möchte für Jan eine Strategie erarbeiten, wie er eine staatliche Digitalisierungsförderung beantragen kann. Ansatz: Wenn das Projekt z.B. 80.000 Euro kostet, könnte Jan durch Förderung nur 40.000 selbst tragen. Alternativ wäre auch eine monatliche Finanzierung (z.B. 40 Monate à 1000 Euro) denkbar. Das senkt die Hemmschwelle zum Auftrag erheblich und ist beiden wichtig.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-005",
+      "titel": "Dienstagstermin Pforzheim & Schwiegerkusine",
+      "details": "Iris fährt am Dienstag (28.04.2026) nach Pforzheim zu Jan, um das Massmaster-Projekt zu besprechen. Auf dem Rückweg (ca. 20-30 Min. Fahrt) besucht sie ihre Schwiegerkusine, deren Firma ca. 25 Mitarbeitende hat und einen extrem niedrigen Digitalisierungsgrad (die Vorgängerin im Büro arbeitete mit Taschenrechner). Aktuell nutzen sie nur ein Galer-Tool zur Stundenerfassung. Iris will dort eine Demo präsentieren und die Firma so vorbereitet anlegen, dass ein Nein schwer fällt – mit einem Monat Testphase.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-006",
+      "titel": "Demo-Version Craftmaster – Scope-Balance",
+      "details": "Fabian betont, dass die Demo-Version für Craftmaster nicht zu umfangreich sein darf, damit der Kunde nicht denkt, alles sei schon fertig und er nicht mehr zahlen muss. Gleichzeitig muss das, was auf Main kommt, verlässlich funktionieren, da Iris damit beim Dienstagstermin arbeiten wird. Balance: solide Basis live, erweiterte Features als ausstehend kommunizieren.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-007",
+      "titel": "Massmaster Supabase-Migration abgeschlossen",
+      "details": "Fabian hat Massmaster auf eine eigene Supabase-Datenbank migriert (nicht in Craftmaster integriert) und das Projekt ist jetzt live. Struktur analog zu Craftmaster: Develop- und Main-Branch, Login und Security. Zugangsdaten/Passwort wurden Iris per E-Mail geschickt. Die Bereinigung der Logikfehler war aufwändig, weil die Excel-Listen des Kunden verwirrend aufgebaut sind (Punkte mehrfach mit unterschiedlichen Daten aufgeführt) und menschliche Bewertung erforderten.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-008",
+      "titel": "Branch-Strategie und Feature-Branches",
+      "details": "Künftig gibt es im Repository nur noch Develop und Main als Dauer-Branches. Für jede neue Arbeit (Bugfix, Feature, Modul) wird ein eigener Feature-Branch angelegt und nach dem Merge sofort gelöscht. Iris hat bestätigt, dass die bestehenden Branches 'Feature Iris' und 'Feature Branch' gelöscht werden können – sie enthalten keine verlorenswerten Änderungen mehr, nur Testartefakte.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-009",
+      "titel": "Versionierung einführen",
+      "details": "Fabian will professionelle Versionierung einführen. Startpunkt: aktueller Stand auf Main als Version 1.00 markieren. Zukünftig in Releases arbeiten (z.B. Release 1.2), mit Hotfix-Nummerierung (1.2.1 etc.). Optional Feature-Flagging – das darf Fabian selbst entscheiden. Ziel ist mehr Übersicht, welcher Stand gerade live ist.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-010",
+      "titel": "Offene Pull Requests und Dependabot",
+      "details": "Im Repository sind diverse offene Pull Requests, die Iris nicht zuordnen kann – vermutlich automatisierte Dependabot-Updates (z.B. 'Bump Tailwind Merge from 2.6.2 to 3.5'). Ein PR (Nr. 594) scheint von Iris zu stammen, sie erinnert sich aber nicht mehr. Fabian soll die Liste sichten, aufräumen und sicherstellen, dass der Repo-Zustand übersichtlich ist.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-011",
+      "titel": "Agent-Workflow: Bugsnag → Mattermost → Lead Developer",
+      "details": "Fabian hat einen Agent-Workflow aufgebaut: Fehler auf Live werden via Bugsnag erfasst, gehen nach Mattermost und werden dem Lead Developer Agent zugewiesen, der ein Issue mit Lösungsvorschlag erstellt und es Iris (bzw. dem richtigen Reviewer) zuweist. Der GitHub-Mail-Workflow funktioniert bereits. Fabian wird nach Abschluss eine Übersicht erstellen, welcher Agent welche Rolle hat, inklusive Zugangsdaten.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-012",
+      "titel": "Craftmaster KI-Funktionen neu verdrahtet",
+      "details": "Fabian hat in Craftmaster die Wetter-Funktion (hardcoded, kurz) implementiert – dabei fiel auf, dass alle ca. 10-12 KI-Funktionen noch auf Lovable-Konfiguration liefen. Er hat diese auf seinen eigenen API-Key umgestellt, rein zum Testen. Für die Produktion muss ein dedizierter nextWAVE-Digital-API-Key genutzt werden. Die Umstellung ist später jederzeit möglich.",
+      "quelle": "Call 22.04.2026"
+    },
+    {
+      "id": "call-20260422-013",
+      "titel": "Claude Opus 4.7 im Coding-Einsatz",
+      "details": "Fabian nutzt Claude Opus 4.7 inzwischen ausschließlich zum Coden (in VS Code), aktuell auf High Effort. An manchen Stellen merklich besser als das Vorgängermodell. Für alltägliche Aufgaben wie Brainstorming oder Gegenchecks nutzt er weiterhin das ältere Modell. Iris bestätigt: PDF-Generierung kostet deutlich mehr Tokens, daher erst Text im Chat anzeigen lassen und PDF nur am Ende.",
+      "quelle": "Call 22.04.2026"
+    }
+  ]
+}

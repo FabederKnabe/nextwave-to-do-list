@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nextWAVE Digital — To Do Liste</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--p0:oklch(0.7 0.16 25);--p1:oklch(0.78 0.13 80);--p2:oklch(0.72 0.1 200);--p3:oklch(0.7 0.08 280);--r:10px;--rl:14px;}
+[data-theme="dark"]{
+  --bg:#0e0e14;--bg2:#15151d;--bg3:rgba(255,255,255,0.04);--bg-hover:rgba(255,255,255,0.05);
+  --text:#ecedf0;--text2:#8b8c95;--text3:#5a5b62;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --accent:oklch(0.72 0.14 270);--accent-soft:oklch(0.72 0.14 270 / 0.15);--accent-bg:oklch(0.72 0.14 270 / 0.08);
+  --glow:oklch(0.72 0.14 270 / 0.3);
+  --shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 30px rgba(0,0,0,0.3);
+  --shadow-sm:0 4px 20px rgba(0,0,0,0.2);
+  --logo:url('assets/nextwave-logo-white.png');
+  --p0:oklch(0.7 0.16 25);--p1:oklch(0.78 0.13 80);--p2:oklch(0.72 0.1 200);--p3:oklch(0.7 0.08 280);
+}
+[data-theme="light"]{
+  --bg:#f5f5f8;--bg2:#ffffff;--bg3:#fbfbfd;--bg-hover:#fbfbfd;
+  --text:#1a1a22;--text2:#7a7b85;--text3:#b0b1b9;
+  --border:rgba(0,0,0,0.06);--border2:rgba(0,0,0,0.12);
+  --accent:oklch(0.5 0.16 270);--accent-soft:oklch(0.5 0.16 270 / 0.1);--accent-bg:oklch(0.5 0.16 270 / 0.05);
+  --glow:oklch(0.5 0.16 270 / 0.2);
+  --shadow:0 1px 0 rgba(255,255,255,0.8) inset, 0 8px 30px rgba(0,0,0,0.04);
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+  --logo:url('assets/nextwave-logo-dark.png');
+  --p0:oklch(0.55 0.18 25);--p1:oklch(0.65 0.15 70);--p2:oklch(0.55 0.1 200);--p3:oklch(0.55 0.08 280);
+}
+html,body{height:100%}
+body{
+  font-family:'Geist','Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;
+  background-image:radial-gradient(ellipse 80% 50% at 50% 0%,var(--glow),transparent 70%);
+  background-attachment:fixed;
+  transition:background 0.4s,color 0.4s;
+}
+
+/* ============== HEADER ============== */
+.header{
+  padding:24px 40px;display:flex;align-items:center;justify-content:space-between;
+  backdrop-filter:blur(20px);
+  background:color-mix(in srgb,var(--bg) 60%,transparent);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:50;
+}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-logo{
+  height:128px;width:auto;display:block;
+  background:var(--logo) no-repeat center/contain;
+  aspect-ratio:1/1;
+}
+.brand-divider{width:1px;height:64px;background:var(--border);margin-left:6px}
+.brand-text{
+  font-size:22px;color:var(--text);font-weight:300;
+  letter-spacing:0.32em;text-transform:uppercase;padding-left:0.32em;
+}
+.header-actions{display:flex;align-items:center;gap:10px}
+.icon-btn{
+  background:var(--bg3);border:1px solid var(--border);
+  width:36px;height:36px;border-radius:10px;cursor:pointer;
+  color:var(--text);display:grid;place-items:center;
+  transition:all 0.2s;
+}
+.icon-btn:hover{background:var(--bg-hover);border-color:var(--border2)}
+.icon-btn svg{width:14px;height:14px}
+
+/* ============== LAYOUT ============== */
+.layout{display:grid;grid-template-columns:200px 1fr;gap:0;min-height:calc(100vh - 178px)}
+.sidebar{
+  padding:28px 16px 28px 40px;
+  border-right:1px solid var(--border);
+}
+.nav-section{
+  font-size:10px;font-family:'Geist Mono',monospace;
+  letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--text3);padding:0 12px 10px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;font-size:13px;border-radius:8px;
+  color:var(--text2);cursor:pointer;
+  transition:all 0.18s;margin-bottom:2px;
+  background:transparent;border:none;width:100%;font-family:inherit;text-align:left;
+}
+.nav-item:hover{background:var(--bg-hover);color:var(--text)}
+.nav-item.active{
+  background:var(--accent-soft);color:var(--accent);font-weight:500;
+}
+.nav-icon{width:15px;height:15px;flex-shrink:0;opacity:0.7}
+.nav-item.active .nav-icon{opacity:1}
+.nb{
+  margin-left:auto;font-size:10px;font-family:'Geist Mono',monospace;
+  padding:2px 8px;border-radius:999px;background:var(--accent);color:#fff;font-weight:600;
+}
+.nav-item:not(.active) .nb{background:var(--bg3);color:var(--text2)}
+
+.main{padding:32px 40px 80px}
+
+/* ============== HERO STATS ============== */
+.hero{
+  background:var(--bg2);border-radius:20px;padding:28px;
+  border:1px solid var(--border);box-shadow:var(--shadow);
+  display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:28px;align-items:center;
+  margin-bottom:24px;
+}
+.hero-title{font-size:12px;color:var(--text2);margin-bottom:8px}
+.hero-pct{display:flex;align-items:baseline;gap:8px;margin-bottom:16px}
+.hero-pct-num{
+  font-size:44px;font-weight:500;letter-spacing:-0.03em;
+  background:linear-gradient(135deg,var(--text),var(--accent));
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  font-feature-settings:'tnum';line-height:1;
+}
+.hero-pct-lbl{font-size:14px;color:var(--text2)}
+.progress{height:6px;border-radius:999px;background:var(--border);overflow:hidden}
+.progress-fill{
+  height:100%;background:linear-gradient(90deg,var(--accent),var(--p1));
+  border-radius:999px;transition:width 0.6s cubic-bezier(0.2,0.8,0.2,1);
+}
+.stat-chip{cursor:pointer;transition:opacity 0.2s}
+.stat-chip-lbl{font-size:12px;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.stat-chip-num{
+  font-size:36px;font-weight:500;letter-spacing:-0.03em;
+  font-feature-settings:'tnum';line-height:1;
+  transition:color 0.2s;
+}
+.stat-chip[data-active="true"] .stat-chip-num{color:var(--accent)}
+.stat-chip[data-key="open"] .stat-chip-num{color:var(--accent)}
+.stat-chip[data-key="done"] .stat-chip-num{color:var(--p2)}
+.stat-chip[data-key="all"] .stat-chip-num{color:var(--text)}
+.stat-chip:not([data-active="true"]) .stat-chip-num{opacity:0.55}
+
+/* ============== TOOLBAR ============== */
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.filter-group{
+  display:flex;padding:4px;border-radius:12px;
+  background:var(--bg2);border:1px solid var(--border);
+}
+.filter-btn{
+  padding:8px 16px;font-size:13px;font-weight:500;
+  background:transparent;color:var(--text2);
+  border:none;border-radius:8px;cursor:pointer;
+  transition:all 0.25s cubic-bezier(0.2,0.8,0.2,1);
+  font-family:inherit;display:flex;align-items:center;gap:8px;
+}
+.filter-btn[data-active="true"]{background:var(--accent-soft);color:var(--accent)}
+.filter-btn-count{font-size:11px;font-family:'Geist Mono',monospace;opacity:0.7}
+.search-wrap{position:relative;flex:1;max-width:360px}
+.search-wrap svg{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  width:14px;height:14px;color:var(--text2);
+}
+.search-input{
+  width:100%;padding:10px 14px 10px 38px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);font-size:13px;
+  font-family:inherit;outline:none;transition:all 0.2s;
+}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* ============== PRIORITY GROUPS ============== */
+.priority-group{margin-top:8px}
+.priority-group + .priority-group{margin-top:28px}
+.pg-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-left:4px}
+.pg-dot{width:8px;height:8px;border-radius:999px}
+.pg-dot[data-p="0"]{background:var(--p0);box-shadow:0 0 0 3px color-mix(in srgb,var(--p0) 25%,transparent)}
+.pg-dot[data-p="1"]{background:var(--p1);box-shadow:0 0 0 3px color-mix(in srgb,var(--p1) 25%,transparent)}
+.pg-dot[data-p="2"]{background:var(--p2);box-shadow:0 0 0 3px color-mix(in srgb,var(--p2) 25%,transparent)}
+.pg-dot[data-p="3"]{background:var(--p3);box-shadow:0 0 0 3px color-mix(in srgb,var(--p3) 25%,transparent)}
+.pg-title{font-size:14px;font-weight:600;letter-spacing:-0.01em}
+.pg-count{
+  font-family:'Geist Mono',monospace;font-size:11px;color:var(--text2);
+  padding:2px 8px;border-radius:999px;background:var(--bg3);border:1px solid var(--border);
+}
+.pg-list{
+  background:var(--bg2);border-radius:14px;
+  border:1px solid var(--border);overflow:hidden;
+  box-shadow:var(--shadow-sm);
+}
+
+/* ============== TODO ROW ============== */
+.todo-row{
+  border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background 0.2s,opacity 0.4s;
+}
+.todo-row:last-child{border-bottom:none}
+.todo-row:hover{background:var(--bg-hover)}
+.todo-row.done{opacity:0.5}
+.todo-row.done .todo-title{text-decoration:line-through;text-decoration-color:var(--text2);color:var(--text2)}
+.todo-compact{display:flex;align-items:flex-start;gap:14px;padding:16px 18px}
+.chk{
+  width:20px;height:20px;border-radius:6px;
+  border:1.5px solid var(--border2);background:transparent;
+  display:grid;place-items:center;flex-shrink:0;margin-top:1px;
+  cursor:pointer;
+  transition:all 0.25s cubic-bezier(0.2,0.8,0.2,1);
+}
+.chk:hover{border-color:var(--accent)}
+.chk.on{background:var(--accent);border-color:var(--accent)}
+.chk.tick{transform:scale(1.2);box-shadow:0 0 0 8px var(--accent-soft)}
+.chk svg{
+  width:12px;height:12px;opacity:0;transform:scale(0.5);
+  transition:all 0.25s cubic-bezier(0.2,0.8,0.2,1);
+  stroke:#fff;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;fill:none;
+}
+.chk.on svg{opacity:1;transform:scale(1)}
+.todo-body{flex:1;min-width:0}
+.todo-title{font-size:14px;line-height:1.5;color:var(--text);transition:color 0.4s;text-wrap:pretty}
+.todo-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-top:1px}
+.prio-pill{
+  font-size:10px;font-family:'Geist Mono',monospace;font-weight:600;
+  padding:3px 8px;border-radius:999px;
+  background:var(--bg3);border:1px solid var(--border);color:var(--text2);
+  letter-spacing:0.04em;
+}
+.expand-arrow{
+  font-size:10px;color:var(--text2);transition:transform 0.25s;
+  width:18px;height:18px;display:grid;place-items:center;
+}
+.todo-row.expanded .expand-arrow{transform:rotate(180deg)}
+
+.todo-expanded{
+  display:none;padding:0 18px 16px 52px;
+  border-top:1px dashed var(--border);
+}
+.todo-row.expanded .todo-expanded{display:block;padding-top:14px}
+.todo-kontext{font-size:13px;color:var(--text2);line-height:1.6;text-wrap:pretty}
+.todo-expanded-actions{display:flex;gap:8px;margin-top:12px;align-items:center}
+.prio-select{
+  font-size:12px;border:1px solid var(--border);border-radius:8px;
+  padding:6px 10px;background:var(--bg3);color:var(--text);
+  cursor:pointer;font-family:inherit;outline:none;
+}
+.prio-select:focus{border-color:var(--accent)}
+.del-btn{
+  font-size:12px;color:var(--text2);background:transparent;
+  border:1px solid var(--border);border-radius:8px;padding:6px 12px;
+  cursor:pointer;font-family:inherit;transition:all 0.18s;
+}
+.del-btn:hover{color:var(--p0);border-color:var(--p0)}
+
+/* ============== THEMEN ============== */
+.thema-list{display:flex;flex-direction:column;gap:8px}
+.thema-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;cursor:pointer;
+  transition:all 0.18s;box-shadow:var(--shadow-sm);
+}
+.thema-card:hover{border-color:var(--border2)}
+.thema-card.expanded{border-color:var(--accent)}
+.thema-compact{padding:14px 18px;display:flex;align-items:center;gap:12px}
+.thema-title{font-size:14px;font-weight:500;flex:1}
+.thema-date{
+  font-size:11px;font-family:'Geist Mono',monospace;
+  color:var(--text2);flex-shrink:0;
+}
+.thema-expanded{display:none;padding:0 18px 16px;border-top:1px dashed var(--border)}
+.thema-card.expanded .thema-expanded{display:block;padding-top:14px}
+.thema-detail{font-size:13px;color:var(--text2);line-height:1.6;text-wrap:pretty}
+
+/* ============== ADD FORM ============== */
+.add-form{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;padding:24px;box-shadow:var(--shadow-sm);
+}
+.add-form-title{font-size:15px;font-weight:600;margin-bottom:14px;letter-spacing:-0.01em}
+.add-row{display:flex;gap:8px;margin-bottom:10px}
+.add-row:last-child{margin-bottom:0}
+.add-row input,.add-row select,.add-row textarea{
+  flex:1;font-size:13px;padding:10px 12px;
+  border:1px solid var(--border);border-radius:10px;
+  background:var(--bg3);color:var(--text);font-family:inherit;outline:none;
+  transition:border 0.2s;
+}
+.add-row input:focus,.add-row select:focus,.add-row textarea:focus{border-color:var(--accent)}
+.add-row textarea{resize:vertical;min-height:80px;line-height:1.5}
+.add-row input::placeholder,.add-row textarea::placeholder{color:var(--text3)}
+
+/* ============== BUTTONS ============== */
+.btn{
+  padding:8px 16px;font-size:13px;border:1px solid var(--border);
+  border-radius:10px;cursor:pointer;background:var(--bg3);
+  color:var(--text);font-family:inherit;font-weight:500;
+  transition:all 0.18s;white-space:nowrap;
+}
+.btn:hover{background:var(--bg-hover);border-color:var(--border2)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:color-mix(in srgb,var(--accent) 90%,#000);border-color:var(--accent)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* ============== THEME DROPDOWN ============== */
+.theme-dropdown{position:relative}
+.theme-dropdown-menu{
+  display:none;position:absolute;right:0;top:calc(100% + 6px);
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:12px;padding:4px;min-width:160px;z-index:300;
+  box-shadow:0 12px 40px rgba(0,0,0,0.3);
+}
+.theme-dropdown-menu.open{display:block;animation:fadeSlide 0.15s ease}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.theme-option{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  font-size:13px;color:var(--text2);cursor:pointer;border-radius:8px;
+  transition:all 0.12s;font-family:inherit;
+  background:none;border:none;width:100%;text-align:left;
+}
+.theme-option:hover{background:var(--bg3);color:var(--text)}
+.theme-option.active{color:var(--accent);font-weight:500}
+.theme-option svg{width:15px;height:15px;flex-shrink:0}
+
+/* ============== MODAL ============== */
+.modal-wrap{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);
+  z-index:200;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-wrap.open{display:flex;animation:fadeIn 0.2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{
+  background:var(--bg2);border-radius:16px;padding:28px;width:480px;max-width:95vw;
+  border:1px solid var(--border2);box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  animation:popIn 0.25s cubic-bezier(0.2,0.8,0.2,1);
+}
+@keyframes popIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
+.modal h3{font-size:17px;font-weight:600;margin-bottom:6px;letter-spacing:-0.01em}
+.modal-sub{font-size:13px;color:var(--text2);margin-bottom:16px}
+.modal label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;margin-top:14px;font-weight:500}
+.modal input{
+  width:100%;padding:10px 12px;font-size:13px;
+  border:1px solid var(--border);border-radius:10px;
+  background:var(--bg3);color:var(--text);font-family:inherit;outline:none;
+}
+.modal input:focus{border-color:var(--accent)}
+.modal-hint{font-size:12px;color:var(--text3);margin-top:10px;line-height:1.5}
+.modal-actions{display:flex;gap:8px;margin-top:24px;justify-content:flex-end}
+
+/* ============== STATUS BAR ============== */
+.statusbar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:color-mix(in srgb,var(--bg2) 90%,transparent);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  padding:8px 40px;font-size:11px;font-family:'Geist Mono',monospace;
+  color:var(--text2);display:flex;align-items:center;justify-content:space-between;
+  z-index:50;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--p2);display:inline-block;margin-right:6px;vertical-align:middle}
+.dot.err{background:var(--p0)}.dot.warn{background:var(--p1)}
+
+/* ============== EMPTY STATE ============== */
+.empty-state{
+  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  padding:60px 24px;text-align:center;
+}
+.empty-state-icon{
+  width:48px;height:48px;border-radius:14px;margin:0 auto 16px;
+  background:var(--accent-soft);display:grid;place-items:center;color:var(--accent);
+}
+.empty-state-title{font-size:15px;color:var(--text);font-weight:500;margin-bottom:4px}
+.empty-state-sub{font-size:13px;color:var(--text2)}
+
+/* ============== SCROLLBAR ============== */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.25);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ============== HIDDEN VIEWS ============== */
+#viewTodos,#viewThemen,#viewManual{display:none}
+
+/* Responsive */
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{padding:16px 24px;border-right:none;border-bottom:1px solid var(--border)}
+  .main{padding:24px}
+  .hero{grid-template-columns:1fr;gap:20px}
+  .header{padding:18px 24px}
+  .brand-logo{height:80px}
+  .brand-text{font-size:16px;letter-spacing:0.24em}
+  .brand-divider{height:40px}
+  .statusbar{padding:8px 24px}
+}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand">
+    <img class="brand-logo" id="headerLogo" src="nextwave-logo-white.png" alt="nextWAVE Digital"/>
+    <div class="brand-divider"></div>
+    <div class="brand-text">To-Do Liste</div>
+  </div>
+  <div class="header-actions">
+    <div class="theme-dropdown" id="themeDropdown">
+      <button class="icon-btn" id="themeIconBtn" onclick="toggleDropdown(event)" title="Theme">
+        <svg id="themeIconSvg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.93 4.93l1.41 1.41M13.66 13.66l1.41 1.41M4.93 15.07l1.41-1.41M13.66 6.34l1.41-1.41"/></svg>
+      </button>
+      <div class="theme-dropdown-menu" id="themeMenu">
+        <button class="theme-option" id="optLight" onclick="setTheme('light')">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.93 4.93l1.41 1.41M13.66 13.66l1.41 1.41M4.93 15.07l1.41-1.41M13.66 6.34l1.41-1.41"/></svg>
+          Hell
+        </button>
+        <button class="theme-option" id="optDark" onclick="setTheme('dark')">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17.5 12A7.5 7.5 0 0 1 8 2.5a7.5 7.5 0 1 0 9.5 9.5z"/></svg>
+          Dunkel
+        </button>
+        <button class="theme-option" id="optSystem" onclick="setTheme('system')">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="16" height="11" rx="2"/><path d="M7 17h6M10 14v3"/></svg>
+          System
+        </button>
+      </div>
+    </div>
+    <button class="btn btn-sm" onclick="openSettings()">Einstellungen</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="nav-section">Navigation</div>
+    <button class="nav-item active" id="navTodos" onclick="setView('todos')">
+      <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="11" height="11" rx="2"/><path d="M5 7.5l2 2 3-3"/></svg>
+      To-dos<span class="nb" id="nbTodos"></span>
+    </button>
+    <button class="nav-item" id="navThemen" onclick="setView('themen')">
+      <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h11M2 7.5h7M2 11h9"/></svg>
+      Themen
+    </button>
+    <button class="nav-item" id="navManual" onclick="setView('manual')">
+      <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7.5 2v11M2 7.5h11"/></svg>
+      Manuell
+    </button>
+  </aside>
+
+  <main class="main">
+    <div id="viewTodos">
+      <!-- Hero progress + stats -->
+      <section class="hero">
+        <div>
+          <div class="hero-title">Fortschritt</div>
+          <div class="hero-pct">
+            <span class="hero-pct-num" id="heroPct">0%</span>
+            <span class="hero-pct-lbl">abgeschlossen</span>
+          </div>
+          <div class="progress"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+        <div class="stat-chip" data-key="open" id="sfOpen" data-active="true" onclick="setFilter('open')">
+          <div class="stat-chip-lbl">Offen</div>
+          <div class="stat-chip-num" id="sOpen">0</div>
+        </div>
+        <div class="stat-chip" data-key="done" id="sfDone" onclick="setFilter('done')">
+          <div class="stat-chip-lbl">Erledigt</div>
+          <div class="stat-chip-num" id="sDone">0</div>
+        </div>
+      </section>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="filter-group">
+          <button class="filter-btn" data-active="false" id="fbAll" onclick="setFilter('all')">Alle <span class="filter-btn-count" id="cAll">0</span></button>
+          <button class="filter-btn" data-active="true" id="fbOpen" onclick="setFilter('open')">Offen <span class="filter-btn-count" id="cOpen">0</span></button>
+          <button class="filter-btn" data-active="false" id="fbDone" onclick="setFilter('done')">Erledigt <span class="filter-btn-count" id="cDone">0</span></button>
+        </div>
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" class="search-input" id="searchInput" placeholder="Suchen…" oninput="renderCurrentView()"/>
+        </div>
+        <button class="btn btn-sm" id="clearDoneBtn" onclick="clearAllDone()" style="display:none;margin-left:auto">Erledigte löschen</button>
+      </div>
+
+      <div id="todoList"></div>
+    </div>
+
+    <div id="viewThemen">
+      <div id="themenList" class="thema-list"></div>
+    </div>
+
+    <div id="viewManual">
+      <div class="add-form">
+        <div class="add-form-title">Neuer Eintrag</div>
+        <div class="add-row"><input type="text" id="mText" placeholder="Titel / Aufgabe…"/></div>
+        <div class="add-row"><textarea id="mKontext" placeholder="Kontext / Details…"></textarea></div>
+        <div class="add-row">
+          <select id="mTyp"><option value="todo">To-do</option><option value="thema">Thema</option></select>
+          <select id="mPrio"><option value="0">P0 — Kritisch</option><option value="1">P1 — Hoch</option><option value="2">P2 — Mittel</option><option value="3" selected>P3 — Niedrig</option></select>
+          <button class="btn btn-primary" onclick="addManual()">Hinzufügen</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="welcomeMsg" style="display:none;padding:60px 24px;text-align:center">
+      <div style="font-size:18px;font-weight:600;margin-bottom:8px;letter-spacing:-0.01em">Willkommen</div>
+      <p style="font-size:14px;color:var(--text2);margin-bottom:20px">Bitte Output-Ordner konfigurieren, damit deine Daten geladen werden.</p>
+      <button class="btn btn-primary" onclick="openSettings()">Konfigurieren</button>
+    </div>
+  </main>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-wrap" id="settingsModal">
+  <div class="modal">
+    <h3>Einstellungen</h3>
+    <div class="modal-sub">Pfade und Refresh-Verhalten konfigurieren.</div>
+    <label>Output-Ordner</label>
+    <input type="text" id="cfgPath" placeholder="C:\Videocalls\output"/>
+    <label>Auto-Refresh (Sekunden, 0 = aus)</label>
+    <input type="number" id="cfgRefresh" value="30" min="0" max="300"/>
+    <p class="modal-hint">Starte server.py und öffne über http://localhost:8000</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeSettings()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Status Bar -->
+<div class="statusbar">
+  <span><span class="dot" id="statusDot"></span><span id="statusTxt">Bereit</span></span>
+  <span id="lastUpdate"></span>
+</div>
+
+<script>
+/* ============================================================
+   STATE — same keys as before, fully backwards-compatible
+   ============================================================ */
+const LS = {
+  path: localStorage.getItem('nw_path') || '',
+  refresh: parseInt(localStorage.getItem('nw_refresh') || '30'),
+  done: JSON.parse(localStorage.getItem('nw_done') || '{}'),
+  prio: JSON.parse(localStorage.getItem('nw_prio') || '{}'),
+  manual: JSON.parse(localStorage.getItem('nw_manual') || '[]'),
+  deleted: JSON.parse(localStorage.getItem('nw_deleted') || '{}'),
+};
+if (!Array.isArray(LS.manual)) LS.manual = [];
+if (typeof LS.deleted !== 'object' || LS.deleted === null) LS.deleted = {};
+
+let masterData = { todos: [], themen: [] };
+let statusFilter = 'open';
+let currentView = 'todos';
+let refreshTimer = null;
+
+function save() {
+  localStorage.setItem('nw_done', JSON.stringify(LS.done));
+  localStorage.setItem('nw_prio', JSON.stringify(LS.prio));
+  localStorage.setItem('nw_manual', JSON.stringify(LS.manual));
+  localStorage.setItem('nw_deleted', JSON.stringify(LS.deleted));
+}
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+/* ============================================================
+   SETTINGS MODAL
+   ============================================================ */
+function openSettings() {
+  document.getElementById('cfgPath').value = LS.path;
+  document.getElementById('cfgRefresh').value = LS.refresh;
+  document.getElementById('settingsModal').classList.add('open');
+}
+function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
+function saveSettings() {
+  LS.path = document.getElementById('cfgPath').value.trim();
+  LS.refresh = parseInt(document.getElementById('cfgRefresh').value) || 0;
+  localStorage.setItem('nw_path', LS.path);
+  localStorage.setItem('nw_refresh', LS.refresh);
+  closeSettings();
+  loadData();
+  setupRefresh();
+}
+
+/* ============================================================
+   DATA LOADING
+   ============================================================ */
+async function fetchJ(f) {
+  try { const r = await fetch(f); if (r.ok) return await r.json(); } catch (e) {}
+  return null;
+}
+async function loadData() {
+  setStatus('Lade...', 'warn');
+  const master = await fetchJ('master.json');
+  if (!master) {
+    document.getElementById('welcomeMsg').style.display = 'block';
+    if (!LS.path) openSettings();
+    setStatus('Keine Daten', 'err');
+    return;
+  }
+  document.getElementById('welcomeMsg').style.display = 'none';
+  masterData.todos = [...(master.todos || []), ...(master.offene_punkte || [])];
+  masterData.themen = master.themen || [];
+  setStatus('Geladen', '');
+  document.getElementById('lastUpdate').textContent = master.zuletzt_aktualisiert ? 'Stand: ' + master.zuletzt_aktualisiert : '';
+  renderCurrentView();
+  updateNavBadges();
+}
+
+/* ============================================================
+   ID HELPERS
+   ============================================================ */
+function tid(t) {
+  if (t.id) return 'todo_' + t.id;
+  const s = t.text || '';
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return 'todo_' + Math.abs(h).toString(36) + '_' + s.slice(0, 20).replace(/\W/g, '_');
+}
+function thid(t) {
+  if (t.id) return 'thema_' + t.id;
+  const s = t.titel || '';
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return 'thema_' + Math.abs(h).toString(36) + '_' + s.slice(0, 20).replace(/\W/g, '_');
+}
+function getPrio(key) {
+  const p = LS.prio[key];
+  return (p === 0 || p === 1 || p === 2 || p === 3) ? p : 3;
+}
+function parseDate(q) {
+  if (!q) return 0;
+  const m = q.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+  return m ? new Date(m[3], m[2] - 1, m[1]).getTime() : 0;
+}
+
+/* ============================================================
+   RENDER TODOS
+   ============================================================ */
+const PRIO_LABELS = { 0: 'Kritisch', 1: 'Hoch', 2: 'Mittel', 3: 'Niedrig' };
+
+function renderTodos() {
+  const manualTodos = LS.manual.filter(t => t._type === 'todo');
+  const raw = [...masterData.todos, ...manualTodos];
+  const manualSet = new Set(manualTodos.map(t => t.id || t.text || ''));
+  const seenKeys = {};
+  // Filter out deleted items
+  const all = raw.map(t => {
+    let key = tid(t);
+    if (seenKeys[key] !== undefined) { seenKeys[key]++; key = key + '_' + seenKeys[key]; }
+    else seenKeys[key] = 0;
+    return { ...t, _key: key, _isManual: manualSet.has(t.id || t.text || '') };
+  }).filter(t => !LS.deleted[t._key]);
+
+  const open = all.filter(t => !LS.done[t._key]);
+  const done = all.filter(t => LS.done[t._key]);
+
+  // Update stats
+  animateCount('sOpen', open.length);
+  animateCount('sDone', done.length);
+  document.getElementById('cAll').textContent = all.length;
+  document.getElementById('cOpen').textContent = open.length;
+  document.getElementById('cDone').textContent = done.length;
+
+  const pct = all.length > 0 ? Math.round((done.length / all.length) * 100) : 0;
+  document.getElementById('heroPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  // Search
+  const q = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+
+  // Filter base
+  let baseItems = statusFilter === 'open' ? open : statusFilter === 'done' ? done : all;
+  if (q) baseItems = baseItems.filter(t => (t.text || '').toLowerCase().includes(q));
+
+  if (!baseItems.length) {
+    document.getElementById('todoList').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <div class="empty-state-title">${q ? 'Nichts gefunden' : statusFilter === 'open' ? 'Alles erledigt' : 'Hier ist es leer'}</div>
+        <div class="empty-state-sub">${q ? 'Versuche einen anderen Suchbegriff.' : 'Kein Eintrag in dieser Ansicht.'}</div>
+      </div>`;
+    return;
+  }
+
+  // Group by priority
+  const groups = { 0: [], 1: [], 2: [], 3: [] };
+  baseItems.forEach(t => { groups[getPrio(t._key)].push(t); });
+
+  // Sort within each group by date desc
+  const now = Date.now();
+  Object.keys(groups).forEach(p => {
+    groups[p].sort((a, b) => {
+      const da = parseDate(a.quelle || '') || a._createdAt || now;
+      const db = parseDate(b.quelle || '') || b._createdAt || now;
+      return db - da;
+    });
+  });
+
+  let html = '';
+  for (const p of [0, 1, 2, 3]) {
+    const items = groups[p];
+    if (!items.length) continue;
+    html += `
+      <div class="priority-group">
+        <div class="pg-header">
+          <div class="pg-dot" data-p="${p}"></div>
+          <div class="pg-title">${PRIO_LABELS[p]}</div>
+          <div class="pg-count">${items.length}</div>
+        </div>
+        <div class="pg-list">
+          ${items.map(t => renderTodoRow(t)).join('')}
+        </div>
+      </div>`;
+  }
+  document.getElementById('todoList').innerHTML = html;
+}
+
+function renderTodoRow(t) {
+  const key = t._key;
+  const isDone = !!LS.done[key];
+  const p = getPrio(key);
+  const ctx = t.kontext || t.details || '';
+  return `<div class="todo-row ${isDone ? 'done' : ''}" id="row_${esc(key)}">
+    <div class="todo-compact" onclick="toggleExpand('${esc(key)}',event)">
+      <button class="chk ${isDone ? 'on' : ''}" onclick="event.stopPropagation();toggleDone('${esc(key)}',this)" aria-label="Erledigt umschalten">
+        <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+      </button>
+      <div class="todo-body"><div class="todo-title">${esc(t.text || '')}</div></div>
+      <div class="todo-right">
+        <span class="prio-pill">P${p}</span>
+        ${ctx ? '<span class="expand-arrow">▾</span>' : ''}
+      </div>
+    </div>
+    ${ctx ? `<div class="todo-expanded">
+      <div class="todo-kontext">${esc(ctx)}</div>
+      <div class="todo-expanded-actions">
+        <select class="prio-select" onchange="setPrio('${esc(key)}',parseInt(this.value))">
+          <option value="0" ${p === 0 ? 'selected' : ''}>P0 — Kritisch</option>
+          <option value="1" ${p === 1 ? 'selected' : ''}>P1 — Hoch</option>
+          <option value="2" ${p === 2 ? 'selected' : ''}>P2 — Mittel</option>
+          <option value="3" ${p === 3 ? 'selected' : ''}>P3 — Niedrig</option>
+        </select>
+        <button class="del-btn" onclick="deleteTodo('${esc(key)}',${t._isManual})">Löschen</button>
+      </div>
+    </div>` : `<div class="todo-expanded" style="padding-left:52px"><div class="todo-expanded-actions" style="margin-top:0;padding-top:14px">
+      <select class="prio-select" onchange="setPrio('${esc(key)}',parseInt(this.value))">
+        <option value="0" ${p === 0 ? 'selected' : ''}>P0 — Kritisch</option>
+        <option value="1" ${p === 1 ? 'selected' : ''}>P1 — Hoch</option>
+        <option value="2" ${p === 2 ? 'selected' : ''}>P2 — Mittel</option>
+        <option value="3" ${p === 3 ? 'selected' : ''}>P3 — Niedrig</option>
+      </select>
+      <button class="del-btn" onclick="deleteTodo('${esc(key)}',${t._isManual})">Löschen</button>
+    </div></div>`}
+  </div>`;
+}
+
+function toggleExpand(key, e) {
+  if (e.target.closest('.chk')) return;
+  const row = document.getElementById('row_' + key);
+  if (!row) return;
+  const was = row.classList.contains('expanded');
+  document.querySelectorAll('.todo-row.expanded,.thema-card.expanded').forEach(r => r.classList.remove('expanded'));
+  if (!was) row.classList.add('expanded');
+}
+
+/* ============================================================
+   RENDER THEMEN
+   ============================================================ */
+function renderThemen() {
+  const manualThemen = LS.manual.filter(t => t._type === 'thema');
+  const all = [...masterData.themen, ...manualThemen]
+    .sort((a, b) => parseDate(b.quelle || '') - parseDate(a.quelle || ''));
+  const manualKeys = new Set(manualThemen.map(t => thid(t)));
+  if (!all.length) {
+    document.getElementById('themenList').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-title">Keine Themen</div>
+        <div class="empty-state-sub">Themen erscheinen hier, sobald sie geladen werden.</div>
+      </div>`;
+    return;
+  }
+  document.getElementById('themenList').innerHTML = all.map(t => {
+    const key = thid(t);
+    return `<div class="thema-card" id="row_${esc(key)}" onclick="toggleThema('${esc(key)}')">
+      <div class="thema-compact">
+        <div class="thema-title">${esc(t.titel || '')}</div>
+        ${t.quelle ? `<span class="thema-date">${esc(t.quelle.replace(/^(E-Mail|Call)\s*/, ''))}</span>` : ''}
+        <span class="expand-arrow">▾</span>
+      </div>
+      <div class="thema-expanded">
+        <div class="thema-detail">${esc(t.details || '')}</div>
+        ${manualKeys.has(key) ? `<div style="margin-top:12px"><button class="del-btn" onclick="event.stopPropagation();deleteManual('${esc(key)}')">Löschen</button></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleThema(key) {
+  const card = document.getElementById('row_' + key);
+  if (!card) return;
+  const was = card.classList.contains('expanded');
+  document.querySelectorAll('.todo-row.expanded,.thema-card.expanded').forEach(r => r.classList.remove('expanded'));
+  if (!was) card.classList.add('expanded');
+}
+
+/* ============================================================
+   NAV BADGES
+   ============================================================ */
+function updateNavBadges() {
+  const seenKeys = {};
+  const open = [...masterData.todos, ...LS.manual.filter(t => t._type === 'todo')]
+    .filter(t => {
+      let key = tid(t);
+      if (seenKeys[key] !== undefined) { seenKeys[key]++; key = key + '_' + seenKeys[key]; }
+      else seenKeys[key] = 0;
+      return !LS.done[key];
+    }).length;
+  document.getElementById('nbTodos').textContent = open || '';
+}
+
+/* ============================================================
+   FILTER + ACTIONS
+   ============================================================ */
+function setFilter(f) {
+  statusFilter = f;
+  // Stat chips
+  ['sfOpen', 'sfDone'].forEach(id => document.getElementById(id).setAttribute('data-active', 'false'));
+  if (f === 'open') document.getElementById('sfOpen').setAttribute('data-active', 'true');
+  if (f === 'done') document.getElementById('sfDone').setAttribute('data-active', 'true');
+  // Filter pills
+  ['fbAll', 'fbOpen', 'fbDone'].forEach(id => document.getElementById(id).setAttribute('data-active', 'false'));
+  document.getElementById(f === 'open' ? 'fbOpen' : f === 'done' ? 'fbDone' : 'fbAll').setAttribute('data-active', 'true');
+  // Show "clear done" button only when viewing Erledigt
+  const clearBtn = document.getElementById('clearDoneBtn');
+  if (clearBtn) clearBtn.style.display = (f === 'done' && Object.keys(LS.done).length > 0) ? 'inline-block' : 'none';
+  renderTodos();
+}
+
+function toggleDone(key, btn) {
+  const newVal = !LS.done[key];
+  LS.done[key] = newVal;
+  if (!newVal) delete LS.done[key];
+  // Tick animation
+  if (btn) {
+    btn.classList.add('tick');
+    setTimeout(() => btn.classList.remove('tick'), 400);
+  }
+  save();
+  // Slight delay so the tick animation is visible before re-render
+  setTimeout(() => { renderCurrentView(); updateNavBadges(); }, 280);
+}
+
+function setPrio(key, p) { LS.prio[key] = p; save(); renderCurrentView(); }
+
+function addManual() {
+  const text = document.getElementById('mText').value.trim();
+  if (!text) return;
+  const typ = document.getElementById('mTyp').value;
+  const id = genId();
+  const item = { id, _type: typ, _manual: true, _createdAt: Date.now(), kontext: document.getElementById('mKontext').value.trim() };
+  if (typ === 'thema') { item.titel = text; item.details = item.kontext; delete item.kontext; }
+  else item.text = text;
+  const key = typ === 'todo' ? tid(item) : thid(item);
+  LS.prio[key] = parseInt(document.getElementById('mPrio').value);
+  LS.manual.push(item);
+  document.getElementById('mText').value = '';
+  document.getElementById('mKontext').value = '';
+  save();
+  updateNavBadges();
+  if (typ === 'todo') setView('todos');
+  else setView('themen');
+}
+
+function deleteTodo(key, isManual) {
+  if (!confirm('Diese Aufgabe wirklich löschen?')) return;
+  if (isManual) {
+    const bare = key.replace(/^(todo_|thema_)/, '');
+    LS.manual = LS.manual.filter(t => t.id !== bare);
+  } else {
+    // For master.json items: mark as deleted so they stay hidden across reloads
+    LS.deleted[key] = true;
+  }
+  delete LS.done[key];
+  delete LS.prio[key];
+  save();
+  renderCurrentView();
+  updateNavBadges();
+}
+
+function clearAllDone() {
+  const count = Object.keys(LS.done).length;
+  if (count === 0) return;
+  if (!confirm(`${count} erledigte Aufgaben endgültig löschen?`)) return;
+  // Mark all currently-done as deleted
+  Object.keys(LS.done).forEach(key => { LS.deleted[key] = true; });
+  // Also remove manual done items
+  LS.manual = LS.manual.filter(t => {
+    const key = t._type === 'todo' ? tid(t) : thid(t);
+    return !LS.done[key];
+  });
+  LS.done = {};
+  save();
+  renderCurrentView();
+  updateNavBadges();
+}
+
+function deleteManual(key) {
+  const bare = key.replace(/^(todo_|thema_)/, '');
+  LS.manual = LS.manual.filter(t => t.id !== bare);
+  delete LS.done[key];
+  delete LS.prio[key];
+  save();
+  renderCurrentView();
+  updateNavBadges();
+}
+
+/* ============================================================
+   THEME
+   ============================================================ */
+function toggleDropdown(e) {
+  e.stopPropagation();
+  document.getElementById('themeMenu').classList.toggle('open');
+}
+document.addEventListener('click', () => document.getElementById('themeMenu')?.classList.remove('open'));
+
+function setTheme(t) {
+  localStorage.setItem('nw_theme', t);
+  applyTheme(t);
+  document.getElementById('themeMenu').classList.remove('open');
+  ['optLight', 'optDark', 'optSystem'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  document.getElementById(t === 'light' ? 'optLight' : t === 'dark' ? 'optDark' : 'optSystem')?.classList.add('active');
+}
+function applyTheme(t) {
+  const prefersDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const isDark = t === 'dark' || (t === 'system' && prefersDark);
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  const ll=document.getElementById('loginLogoImg');if(ll)ll.src=isDark?'nextwave-logo-white.png':'nextwave-logo-dark.png';
+  const hl=document.getElementById('headerLogo');if(hl)hl.src=isDark?'nextwave-logo-white.png':'nextwave-logo-dark.png';
+  const svg = document.getElementById('themeIconSvg');
+  if (svg) {
+    if (t === 'system') svg.innerHTML = '<rect x="2" y="3" width="16" height="11" rx="2"/><path d="M7 17h6M10 14v3"/>';
+    else if (isDark) svg.innerHTML = '<path d="M17.5 12A7.5 7.5 0 0 1 8 2.5a7.5 7.5 0 1 0 9.5 9.5z"/>';
+    else svg.innerHTML = '<circle cx="10" cy="10" r="4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.93 4.93l1.41 1.41M13.66 13.66l1.41 1.41M4.93 15.07l1.41-1.41M13.66 6.34l1.41-1.41"/>';
+  }
+}
+function initTheme() {
+  const saved = localStorage.getItem('nw_theme') || 'system';
+  applyTheme(saved);
+  ['optLight', 'optDark', 'optSystem'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  document.getElementById(saved === 'light' ? 'optLight' : saved === 'dark' ? 'optDark' : 'optSystem')?.classList.add('active');
+}
+// React to system theme changes if 'system' is active
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', () => {
+  if ((localStorage.getItem('nw_theme') || 'system') === 'system') applyTheme('system');
+});
+
+/* ============================================================
+   VIEW SWITCHING
+   ============================================================ */
+function setView(v) {
+  currentView = v;
+  ['viewTodos', 'viewThemen', 'viewManual'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1)).style.display = 'block';
+  document.getElementById('nav' + v.charAt(0).toUpperCase() + v.slice(1)).classList.add('active');
+  renderCurrentView();
+}
+function renderCurrentView() {
+  if (currentView === 'todos') renderTodos();
+  else if (currentView === 'themen') renderThemen();
+}
+
+/* ============================================================
+   AUTO-REFRESH + STATUS
+   ============================================================ */
+function setupRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  if (LS.refresh > 0) refreshTimer = setInterval(loadData, LS.refresh * 1000);
+}
+function setStatus(msg, type) {
+  document.getElementById('statusTxt').textContent = msg;
+  document.getElementById('statusDot').className = 'dot' + (type ? ' ' + type : '');
+}
+
+/* ============================================================
+   COUNT-UP ANIMATION
+   ============================================================ */
+const _counters = {};
+function animateCount(id, target) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const cur = (_counters[id] !== undefined ? _counters[id] : (parseInt(el.textContent) || 0));
+  if (cur === target) { el.textContent = target; _counters[id] = target; return; }
+  const dur = 500, t0 = performance.now();
+  const tick = (t) => {
+    const p = Math.min(1, (t - t0) / dur);
+    const eased = 1 - Math.pow(1 - p, 3);
+    const v = Math.round(cur + (target - cur) * eased);
+    el.textContent = v;
+    if (p < 1) requestAnimationFrame(tick);
+    else _counters[id] = target;
+  };
+  requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   ESCAPE
+   ============================================================ */
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+
+const AUTH = {user:'nextWAVE-digital',hash:'501af41f68e529c38c0c02ae916099336c65f43975ed60afb3bebc773755fbd9'};
+async function sha256(str){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function doLogin(){
+  const user=document.getElementById('loginUser').value.trim();
+  const pw=document.getElementById('loginPw').value;
+  const errEl=document.getElementById('loginError');
+  if(!user||!pw){errEl.textContent='Bitte alle Felder ausfüllen.';return;}
+  const h=await sha256(pw);
+  if(user===AUTH.user&&h===AUTH.hash){
+    sessionStorage.setItem('nw_auth','1');
+    document.getElementById('loginWrap').style.display='none';
+    loadData();setupRefresh();
+  }else{errEl.textContent='Benutzername oder Passwort falsch.';document.getElementById('loginPw').value='';}
+}
+function checkAuth(){
+  if(sessionStorage.getItem('nw_auth')!=='1'){document.getElementById('loginWrap').style.display='flex';return false;}
+  document.getElementById('loginWrap').style.display='none';return true;
+}
+/* ============================================================
+   BOOT
+   ============================================================ */
+initTheme();
+setView('todos');
+if (!LS.path && window.location.protocol === 'file:') {
+  document.getElementById('welcomeMsg').style.display = 'block';
+  openSettings();
+} else {
+  loadData();
+  setupRefresh();
+}
+</script>
+
+<!-- Login -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo-wrap">
+      <img class="login-logo-img" id="loginLogoImg" src="nextwave-logo-white.png" alt="nextWAVE Digital"/>
+      <div class="login-divider"></div>
+      <div class="login-subtitle">To Do Liste</div>
+    </div>
+    <div class="login-field">
+      <label>Benutzername</label>
+      <input type="text" id="loginUser" placeholder="Benutzername" autocomplete="username"/>
+    </div>
+    <div class="login-field">
+      <label>Passwort</label>
+      <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Anmelden</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+</body>
+</html>
