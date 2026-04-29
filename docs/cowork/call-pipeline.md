@@ -3,41 +3,17 @@
 ## Kontext
 Fabian nimmt Calls mit OBS auf. MP4 landet in C:\Videocalls.
 Transkripte gehen nach C:\Videocalls\output\ (MP3 + TXT).
-Extrahierte Daten (Todos, offene Punkte, Themen) werden direkt in die Supabase-Datenbank
-geschrieben — die App nextwave-to-do-list.netlify.app zeigt sie live an (Realtime-Sync).
+Extrahierte Daten (Todos, offene Punkte, Themen) schreibt Cowork als
+Patch-Datei nach `C:\Videocalls\output\patches\` — ein separater
+Windows-Scheduled-Task pusht sie dann nach Supabase.
 
-`master.json` existiert nicht mehr. Alle gemeinsamen Daten leben in der Spalte
-`master_data` der Tabelle `todo_data` (Row `id=1`).
+`master.json` existiert nicht mehr. Alle gemeinsamen Daten leben in der
+Spalte `master_data` der Tabelle `todo_data` (Row `id=1`) in Supabase.
 
----
-
-## Supabase-Setup (einmalig pro Cowork-Maschine)
-
-### Endpoints
-| Aktion | Methode | URL |
-|---|---|---|
-| Lesen | `GET`  | `https://eufqqvatktwzyrjzrhoi.supabase.co/rest/v1/todo_data?id=eq.1&select=master_data` |
-| Schreiben | `PATCH` | `https://eufqqvatktwzyrjzrhoi.supabase.co/rest/v1/todo_data?id=eq.1` |
-
-### Headers (alle Requests)
-```
-apikey:        <SUPABASE_ANON_KEY>
-Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>
-Content-Type:  application/json
-Prefer:        return=minimal     (nur bei PATCH)
-```
-
-### Keys als User-Umgebungsvariablen hinterlegen
-Einmalig in PowerShell ausführen:
-```powershell
-[Environment]::SetEnvironmentVariable('SUPABASE_ANON_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1ZnFxdmF0a3R3enlyanpyaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDY2OTUsImV4cCI6MjA5Mjk4MjY5NX0.JaFG4n3Y223H7EsCxiD3skHdaNmnKU8yNHHQ6D3ZErU', 'User')
-[Environment]::SetEnvironmentVariable('SUPABASE_SERVICE_ROLE_KEY', '<SERVICE_ROLE_KEY_HIER>', 'User')
-```
-
-- `SUPABASE_ANON_KEY` = Dashboard → Project Settings → API → "anon public" (öffentlich, steht auch in `index.html`).
-- `SUPABASE_SERVICE_ROLE_KEY` = Dashboard → Project Settings → API → "service_role" — **geheim**, niemals loggen oder in Chat einfügen.
-
-Nach dem Setzen PowerShell schließen + neu öffnen, damit `$env:SUPABASE_*` greifen.
+**Cowork hat keinen Internet-Zugriff** → kein direkter API-Call.
+Alle Schreibvorgänge laufen über das Push-Script (`scripts/push-patches.ps1`),
+das via Scheduled Task Mo/Mi 18:00 Uhr läuft (Setup-Doku siehe
+`docs/cowork/scheduled-task-setup.md`).
 
 ---
 
@@ -57,32 +33,14 @@ ffmpeg -y -i "C:\Videocalls\[DATEINAME].mp4" -vn -acodec libmp3lame -q:a 2 "C:\V
 C:\Python314\python.exe C:\Videocalls\transcribe.py "C:\Videocalls\output\[DATEINAME].mp3"
 ```
 
-### Schritt 4 — Bestehende Daten lesen (GET)
-
-```powershell
-curl.exe -s "https://eufqqvatktwzyrjzrhoi.supabase.co/rest/v1/todo_data?id=eq.1&select=master_data" `
-  -H "apikey: $env:SUPABASE_ANON_KEY" `
-  -H "Authorization: Bearer $env:SUPABASE_SERVICE_ROLE_KEY" `
-  -o C:\Videocalls\output\current.json
-```
-
-Antwort-Format (Array mit einem Objekt):
-```json
-[{"master_data": {"todos": [...], "offene_punkte": [...], "themen": [...], "zuletzt_aktualisiert": "..."}}]
-```
-
-Extrahiere `master_data`. Falls leer/null: starte mit
-`{ "todos": [], "offene_punkte": [], "themen": [] }`.
-
-### Schritt 5 — Transkript analysieren
+### Schritt 4 — Transkript analysieren
 
 Lies C:\Videocalls\output\[DATEINAME].txt und extrahiere neue Einträge.
 Sprache: **immer Deutsch**.
 
 **ID-Vergabe:**
-Format `call-YYYYMMDD-NNN`. `YYYYMMDD` = heutiges Datum. `NNN` = laufende Nummer ab `001`.
-Höchste bereits vergebene Nummer von **heute** über alle drei Listen finden, dann +1 weiterzählen.
-Beispiel: bestehen `call-20260429-001` und `call-20260429-002`, beginnt der nächste neue Eintrag mit `call-20260429-003`.
+Format `call-YYYYMMDD-NNN`. `YYYYMMDD` = heutiges Datum. `NNN` = laufende Nummer ab `001`,
+über alle drei Listen gemeinsam hochzählen (Todos + offene Punkte + Themen teilen sich den Zähler pro Tag).
 
 **Eintrags-Schemas:**
 
@@ -120,54 +78,42 @@ Beispiel: bestehen `call-20260429-001` und `call-20260429-002`, beginnt der näc
 - `todos.kontext` ausführlich — Fabian muss am nächsten Tag noch verstehen worum es geht.
 - `themen.titel` prägnant, max. 1 Zeile.
 - `themen.details` inhaltlich vollständig, mind. 2-3 Sätze.
-- **Niemals** bestehende Einträge ändern oder löschen — nur HINZUFÜGEN.
 
-### Schritt 6 — Mergen und PATCH
+### Schritt 5 — Patch-Datei schreiben
 
-Baue das gemergte `master_data`-Objekt:
+Schreibe die neuen Einträge nach
+```
+C:\Videocalls\output\patches\YYYYMMDD-HHMMSS.json
+```
+(Datei-Zeitstempel = Zeitpunkt des Schreibens, **nicht** der Call-Zeitpunkt.
+Beispiel: `20260429-174203.json`. Falls der Ordner nicht existiert, anlegen.)
+
+**Format der Patch-Datei** (nur die NEUEN Einträge, kein gemergtes Gesamtobjekt):
 ```json
 {
-  "todos":         [<alle bisherigen>, <neue>],
-  "offene_punkte": [<alle bisherigen>, <neue>],
-  "themen":        [<alle bisherigen>, <neue>],
+  "todos": [<neue Todo-Einträge>],
+  "offene_punkte": [<neue offene-Punkte-Einträge>],
+  "themen": [<neue Themen-Einträge>],
   "zuletzt_aktualisiert": "DD.MM.YYYY HH:MM"
 }
 ```
 
-Schreibe den PATCH-Body nach `C:\Videocalls\output\patch.json`:
-```json
-{
-  "master_data": <gemergtes Objekt von oben>,
-  "zuletzt_aktualisiert": "DD.MM.YYYY HH:MM"
-}
-```
+Leere Listen weglassen oder als `[]` schreiben — beides OK.
 
-Hinweis: `zuletzt_aktualisiert` wird **zweimal** gesetzt — einmal als eigene DB-Spalte
-(wird primär ausgelesen) und einmal innerhalb von `master_data` (Fallback).
+**Kein API-Call, kein curl.** Das Push-Script liest die Datei beim nächsten
+Scheduled-Task-Lauf (Mo/Mi 18:00 Uhr, alle 30 min für 2h), holt den aktuellen
+Stand aus Supabase, hängt die Patch-Einträge an und schickt das Ergebnis zurück.
 
-PATCH abschicken:
-```powershell
-curl.exe -s -w "%{http_code}`n" -X PATCH "https://eufqqvatktwzyrjzrhoi.supabase.co/rest/v1/todo_data?id=eq.1" `
-  -H "apikey: $env:SUPABASE_ANON_KEY" `
-  -H "Authorization: Bearer $env:SUPABASE_SERVICE_ROLE_KEY" `
-  -H "Content-Type: application/json" `
-  -H "Prefer: return=minimal" `
-  --data-binary "@C:\Videocalls\output\patch.json"
-```
-
-**Erwarteter Status: `204`** (kein Body wegen `Prefer: return=minimal`).
-Bei `4xx`/`5xx`: NICHT blind erneut senden. Antwort-Body anzeigen, abbrechen, Fabian benachrichtigen.
-
-### Schritt 7 — Fertig melden
+### Schritt 6 — Fertig melden
 - Anzahl neuer Einträge je Liste (Todos / offene Punkte / Themen).
-- Hinweis: „Browser aktualisiert sich automatisch (Realtime-Sync) — kein manueller Reload nötig."
+- Pfad der geschriebenen Patch-Datei.
+- Hinweis: „Patch wartet auf den nächsten Push-Task-Lauf — Browser aktualisiert sich danach automatisch (Realtime-Sync)."
 
 ---
 
 ## Wichtige Hinweise
 - C:\Videocalls und C:\Users\user\.cache\huggingface\hub als freigegebene Ordner in Cowork.
 - C:\Python314\python.exe für alle Python-Aufrufe.
+- Patches **nicht** ändern oder löschen, nachdem sie geschrieben wurden — das Push-Script verschiebt sie selbst nach `done\` oder `failed\`.
 - `master.json` existiert nicht mehr — alle Daten leben in Supabase `todo_data` Row `id=1`.
-- Neue Einträge HINZUFÜGEN, bestehende NIEMALS löschen oder ändern.
-- Service-Role-Key ist GEHEIM — nicht in Logs/Transkripte/Chats einbauen.
 - Sprache: immer Deutsch.
