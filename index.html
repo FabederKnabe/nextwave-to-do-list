@@ -1326,20 +1326,23 @@ function withTimeout(promise, ms, label) {
 // statt 4s auf getSession() zu warten (Refresh hängt bei korruptem Token).
 function preCheckExpiredSession() {
   try {
-    const key = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
-    if (!key) return false;
+    const sbKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
+    console.log('[boot] sb-* keys in localStorage:', sbKeys);
+    const key = sbKeys.find(k => k.endsWith('-auth-token'));
+    if (!key) { console.log('[boot] no auth-token key'); return false; }
     const raw = localStorage.getItem(key);
-    if (!raw) return false;
+    if (!raw) { console.log('[boot] auth-token empty'); return false; }
     const parsed = JSON.parse(raw);
     const expiresAt = parsed?.expires_at;
     const refreshToken = parsed?.refresh_token || '';
     const nowSec = Math.floor(Date.now() / 1000);
-    // Abgelaufen UND Refresh-Token sieht ungültig aus (echte Tokens sind 20+ Zeichen)
-    if (expiresAt && expiresAt < nowSec && refreshToken.length < 20) {
-      console.warn('Boot: expired session with invalid refresh token, purging');
+    console.log('[boot] expires_at:', expiresAt, 'now:', nowSec, 'expired:', expiresAt < nowSec, 'refreshToken length:', refreshToken.length);
+    // Abgelaufen ODER Refresh-Token sieht ungültig aus → purgen
+    if (expiresAt && (expiresAt < nowSec || refreshToken.length < 20)) {
+      console.warn('[boot] expired or invalid session, purging');
       return true;
     }
-  } catch (_) {}
+  } catch (e) { console.warn('[boot] preCheck error:', e); }
   return false;
 }
 
@@ -1350,7 +1353,7 @@ function preCheckExpiredSession() {
   }
   let session = null;
   try {
-    const result = await withTimeout(sb.auth.getSession(), 4000, 'getSession');
+    const result = await withTimeout(sb.auth.getSession(), 1500, 'getSession');
     session = result?.data?.session || null;
   } catch (e) {
     console.warn('Boot: getSession failed, purging session', e);
