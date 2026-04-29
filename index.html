@@ -540,7 +540,7 @@ body{
         </div>
         <div class="search-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" class="search-input" id="searchInput" placeholder="Suchen…" oninput="renderCurrentView()"/>
+          <input type="search" class="search-input" id="searchInput" name="todo-search" placeholder="Suchen…" autocomplete="off" oninput="renderCurrentView()"/>
         </div>
         <button class="btn btn-sm" id="clearDoneBtn" onclick="clearAllDone()" style="display:none;margin-left:auto">Erledigte löschen</button>
       </div>
@@ -593,6 +593,25 @@ body{
 /* ============================================================
    SUPABASE CLIENT
    ============================================================ */
+// URL-Hash auslesen, BEVOR supabase-js ihn beim createClient konsumiert
+// (detectSessionInUrl=true bereinigt #access_token=…&type=… sofort).
+const initialHashType = (() => {
+  const h = window.location.hash || '';
+  const m = h.match(/[#&]type=(invite|recovery|signup)/);
+  return m ? m[1] : null;
+})();
+const initialHashError = (() => {
+  const h = window.location.hash || '';
+  const code = h.match(/[#&]error_code=([^&]+)/);
+  const desc = h.match(/[#&]error_description=([^&]+)/);
+  if (!code && !desc) return null;
+  return {
+    code: code ? decodeURIComponent(code[1]) : '',
+    desc: desc ? decodeURIComponent(desc[1].replace(/\+/g, ' ')) : '',
+  };
+})();
+let needsPasswordSetup = (initialHashType === 'invite' || initialHashType === 'recovery');
+
 const SUPABASE_URL = 'https://eufqqvatktwzyrjzrhoi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1ZnFxdmF0a3R3enlyanpyaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDY2OTUsImV4cCI6MjA5Mjk4MjY5NX0.JaFG4n3Y223H7EsCxiD3skHdaNmnKU8yNHHQ6D3ZErU';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1165,6 +1184,50 @@ async function sendInvite() {
 }
 
 /* ============================================================
+   PASSWORT SETZEN — Invite + Recovery Flow
+   ============================================================ */
+function showSetup() {
+  document.getElementById('setupWrap').classList.add('open');
+  document.getElementById('loginWrap').classList.remove('open');
+  document.getElementById('userDropdown').style.display = 'none';
+  document.getElementById('userMenu').classList.remove('open');
+  document.getElementById('setupError').textContent = '';
+  document.getElementById('setupInfo').textContent = '';
+  document.getElementById('setupPw1').value = '';
+  document.getElementById('setupPw2').value = '';
+}
+function hideSetup() {
+  document.getElementById('setupWrap').classList.remove('open');
+  document.getElementById('userDropdown').style.display = '';
+  document.getElementById('setupPw1').value = '';
+  document.getElementById('setupPw2').value = '';
+}
+
+async function doPasswordSetup() {
+  const pw1 = document.getElementById('setupPw1').value;
+  const pw2 = document.getElementById('setupPw2').value;
+  const errEl = document.getElementById('setupError');
+  const btn = document.getElementById('setupBtn');
+  errEl.textContent = '';
+  if (pw1.length < 8) { errEl.textContent = 'Passwort muss mindestens 8 Zeichen lang sein.'; return; }
+  if (pw1 !== pw2) { errEl.textContent = 'Die Passwörter stimmen nicht überein.'; return; }
+  btn.disabled = true;
+  const { error } = await sb.auth.updateUser({ password: pw1 });
+  btn.disabled = false;
+  if (error) {
+    errEl.textContent = error.message || 'Passwort konnte nicht gespeichert werden.';
+    return;
+  }
+  // Hash entfernen, damit Reload nicht erneut Setup zeigt
+  if (window.history && window.history.replaceState) {
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+  needsPasswordSetup = false;
+  hideSetup();
+  await loadData();
+}
+
+/* ============================================================
    BOOT
    ============================================================ */
 initTheme();
@@ -1175,21 +1238,50 @@ setView('todos');
   if (session) {
     currentUser = session.user;
     hideLogin();
-    loadData();
+    if (needsPasswordSetup) {
+      showSetup();
+    } else {
+      loadData();
+    }
   } else {
     showLogin();
+    if (initialHashError) {
+      const errEl = document.getElementById('loginError');
+      if (initialHashError.code === 'otp_expired') {
+        errEl.textContent = 'Dieser Einladungs- oder Reset-Link ist abgelaufen oder wurde bereits verwendet. Bitte einen neuen Link anfordern.';
+      } else {
+        errEl.textContent = initialHashError.desc || 'Login-Link konnte nicht verarbeitet werden.';
+      }
+      // Hash entfernen, damit ein Reload die Fehlermeldung nicht erneut zeigt
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    }
   }
 })();
 
 sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    needsPasswordSetup = true;
+    if (session) currentUser = session.user;
+    hideLogin();
+    showSetup();
+    return;
+  }
   if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
     if (!session) return;
     const wasLoggedIn = currentUser !== null;
     currentUser = session.user;
     hideLogin();
-    if (!wasLoggedIn) loadData();
+    if (needsPasswordSetup) {
+      showSetup();
+    } else if (!wasLoggedIn) {
+      loadData();
+    }
   } else if (event === 'SIGNED_OUT') {
     currentUser = null;
+    needsPasswordSetup = false;
+    hideSetup();
     masterData = { todos: [], themen: [] };
     LS.done = {}; LS.prio = {}; LS.manual = []; LS.deleted = {};
     renderCurrentView();
@@ -1198,6 +1290,29 @@ sb.auth.onAuthStateChange((event, session) => {
   }
 });
 </script>
+
+<!-- Passwort setzen (nach Invite/Recovery) -->
+<div class="login-wrap" id="setupWrap">
+  <div class="login-box">
+    <div class="login-logo-wrap">
+      <img class="login-logo-img" src="nextwave-logo-white.png" alt="nextWAVE Digital"/>
+      <div class="login-divider"></div>
+      <div class="login-subtitle">Passwort festlegen</div>
+    </div>
+    <div class="login-info" style="margin-bottom:14px">Willkommen! Bitte lege ein Passwort fest, um dein Konto abzuschließen.</div>
+    <div class="login-field">
+      <label>Neues Passwort</label>
+      <input type="password" id="setupPw1" placeholder="mindestens 8 Zeichen" autocomplete="new-password" onkeydown="if(event.key==='Enter')doPasswordSetup()"/>
+    </div>
+    <div class="login-field">
+      <label>Passwort bestätigen</label>
+      <input type="password" id="setupPw2" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')doPasswordSetup()"/>
+    </div>
+    <button class="login-btn" id="setupBtn" onclick="doPasswordSetup()">Passwort speichern</button>
+    <div class="login-error" id="setupError"></div>
+    <div class="login-info" id="setupInfo"></div>
+  </div>
+</div>
 
 <!-- Login -->
 <div class="login-wrap" id="loginWrap">
@@ -1209,7 +1324,7 @@ sb.auth.onAuthStateChange((event, session) => {
     </div>
     <div class="login-field">
       <label>E-Mail</label>
-      <input type="email" id="loginUser" placeholder="name@example.com" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <input type="email" id="loginUser" placeholder="name@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
     <div class="login-field">
       <label>Passwort</label>
