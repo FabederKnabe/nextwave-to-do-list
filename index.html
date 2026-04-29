@@ -1311,7 +1311,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     hideLogin();
     if (needsPasswordSetup) {
       showSetup();
-    } else if (!wasLoggedIn) {
+    } else if (!wasLoggedIn || !realtimeChannel) {
       await loadData();
       startRealtime();
     }
