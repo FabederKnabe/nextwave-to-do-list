@@ -767,6 +767,10 @@ function parseDate(q) {
 const PRIO_LABELS = { 0: 'Kritisch', 1: 'Hoch', 2: 'Mittel', 3: 'Niedrig' };
 
 function renderTodos() {
+  try { _renderTodosInner(); }
+  catch (e) { console.error('[renderTodos] EXCEPTION:', e, e?.stack); }
+}
+function _renderTodosInner() {
   console.log('[renderTodos] ENTER, masterData.todos=', masterData.todos.length);
   const manualTodos = LS.manual.filter(t => t._type === 'todo');
   const raw = [...masterData.todos, ...manualTodos];
@@ -1306,7 +1310,7 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-04-29-v5');
+console.log('[VERSION] index.html build 2026-04-29-v6');
 initTheme();
 setView('todos');
 
