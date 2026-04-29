@@ -771,32 +771,41 @@ function renderTodos() {
   catch (e) { console.error('[renderTodos] EXCEPTION:', e, e?.stack); }
 }
 function _renderTodosInner() {
-  console.log('[renderTodos] ENTER, masterData.todos=', masterData.todos.length);
+  console.log('[rT 1] ENTER, masterData.todos=', masterData.todos.length);
   const manualTodos = LS.manual.filter(t => t._type === 'todo');
+  console.log('[rT 2] manualTodos:', manualTodos.length);
   const raw = [...masterData.todos, ...manualTodos];
+  console.log('[rT 3] raw:', raw.length);
   const manualSet = new Set(manualTodos.map(t => t.id || t.text || ''));
   const seenKeys = {};
+  console.log('[rT 4] starting map');
   // Filter out deleted items
-  const all = raw.map(t => {
-    let key = tid(t);
+  const all = raw.map((t, idx) => {
+    let key;
+    try { key = tid(t); } catch (e) { console.error('[rT map] tid threw at idx', idx, t, e); throw e; }
     if (seenKeys[key] !== undefined) { seenKeys[key]++; key = key + '_' + seenKeys[key]; }
     else seenKeys[key] = 0;
     return { ...t, _key: key, _isManual: manualSet.has(t.id || t.text || '') };
   }).filter(t => !LS.deleted[t._key]);
+  console.log('[rT 5] all:', all.length);
 
   const open = all.filter(t => !LS.done[t._key]);
   const done = all.filter(t => LS.done[t._key]);
+  console.log('[rT 6] open:', open.length, 'done:', done.length);
 
   // Update stats
   animateCount('sOpen', open.length);
   animateCount('sDone', done.length);
+  console.log('[rT 7] animated counts');
   document.getElementById('cAll').textContent = all.length;
   document.getElementById('cOpen').textContent = open.length;
   document.getElementById('cDone').textContent = done.length;
+  console.log('[rT 8] counters set');
 
   const pct = all.length > 0 ? Math.round((done.length / all.length) * 100) : 0;
   document.getElementById('heroPct').textContent = pct + '%';
   document.getElementById('progressFill').style.width = pct + '%';
+  console.log('[rT 9] hero set');
 
   // Search
   const q = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
@@ -1310,7 +1319,7 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-04-29-v6');
+console.log('[VERSION] index.html build 2026-04-29-v7');
 initTheme();
 setView('todos');
 
