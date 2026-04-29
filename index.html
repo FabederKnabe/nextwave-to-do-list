@@ -668,9 +668,12 @@ async function loadData() {
     return;
   }
   const master = data.master_data || {};
-  masterData.todos = [...(master.todos || []), ...(master.offene_punkte || [])];
-  masterData.themen = master.themen || [];
-  LS.manual = Array.isArray(data.manual_entries) ? data.manual_entries : [];
+  // Defensive Sanitization: nur echte Objekte durchlassen (null/undefined/primitives raus)
+  const isObj = t => t && typeof t === 'object' && !Array.isArray(t);
+  const sane = a => (Array.isArray(a) ? a.filter(isObj) : []);
+  masterData.todos = [...sane(master.todos), ...sane(master.offene_punkte)];
+  masterData.themen = sane(master.themen);
+  LS.manual = sane(data.manual_entries);
   LS.done = (data.done_state && typeof data.done_state === 'object') ? data.done_state : {};
   LS.prio = (data.prio_state && typeof data.prio_state === 'object') ? data.prio_state : {};
   LS.deleted = (data.deleted_state && typeof data.deleted_state === 'object') ? data.deleted_state : {};
@@ -714,6 +717,7 @@ async function stopRealtime() {
    ID HELPERS
    ============================================================ */
 function tid(t) {
+  if (!t || typeof t !== 'object') return 'todo_invalid';
   if (t.id) return 'todo_' + t.id;
   const s = t.text || '';
   let h = 0;
@@ -721,6 +725,7 @@ function tid(t) {
   return 'todo_' + Math.abs(h).toString(36) + '_' + s.slice(0, 20).replace(/\W/g, '_');
 }
 function thid(t) {
+  if (!t || typeof t !== 'object') return 'thema_invalid';
   if (t.id) return 'thema_' + t.id;
   const s = t.titel || '';
   let h = 0;
