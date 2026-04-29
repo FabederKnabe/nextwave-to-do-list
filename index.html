@@ -809,12 +809,16 @@ function _renderTodosInner() {
 
   // Search
   const q = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+  console.log('[rT 10] q=', JSON.stringify(q), 'statusFilter=', statusFilter);
 
   // Filter base
   let baseItems = statusFilter === 'open' ? open : statusFilter === 'done' ? done : all;
+  console.log('[rT 11] baseItems before search:', baseItems.length);
   if (q) baseItems = baseItems.filter(t => (t.text || '').toLowerCase().includes(q));
+  console.log('[rT 12] baseItems after search:', baseItems.length);
 
   if (!baseItems.length) {
+    console.log('[rT 13] EARLY RETURN — empty baseItems');
     document.getElementById('todoList').innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">
@@ -1319,7 +1323,7 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-04-29-v7');
+console.log('[VERSION] index.html build 2026-04-29-v8');
 initTheme();
 setView('todos');
 
