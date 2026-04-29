@@ -842,7 +842,10 @@ function renderTodos() {
         </div>
       </div>`;
   }
-  document.getElementById('todoList').innerHTML = html;
+  console.log('[renderTodos] all:', all.length, 'open:', open.length, 'done:', done.length, 'baseItems:', baseItems.length, 'statusFilter:', statusFilter, 'groups:', { 0: groups[0].length, 1: groups[1].length, 2: groups[2].length, 3: groups[3].length }, 'html length:', html.length);
+  const listEl = document.getElementById('todoList');
+  console.log('[renderTodos] todoList element:', listEl, 'parent display:', listEl?.parentElement?.style.display, 'computed:', listEl ? getComputedStyle(listEl).display : 'NULL');
+  if (listEl) listEl.innerHTML = html;
 }
 
 function renderTodoRow(t) {
