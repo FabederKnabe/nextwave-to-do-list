@@ -767,6 +767,7 @@ function parseDate(q) {
 const PRIO_LABELS = { 0: 'Kritisch', 1: 'Hoch', 2: 'Mittel', 3: 'Niedrig' };
 
 function renderTodos() {
+  console.log('[renderTodos] ENTER, masterData.todos=', masterData.todos.length);
   const manualTodos = LS.manual.filter(t => t._type === 'todo');
   const raw = [...masterData.todos, ...manualTodos];
   const manualSet = new Set(manualTodos.map(t => t.id || t.text || ''));
@@ -1110,6 +1111,7 @@ function setView(v) {
   renderCurrentView();
 }
 function renderCurrentView() {
+  console.log('[renderCurrentView] currentView=', currentView, 'masterData.todos=', masterData.todos.length);
   if (currentView === 'todos') renderTodos();
   else if (currentView === 'themen') renderThemen();
 }
@@ -1304,7 +1306,7 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-04-29-v4');
+console.log('[VERSION] index.html build 2026-04-29-v5');
 initTheme();
 setView('todos');
 
