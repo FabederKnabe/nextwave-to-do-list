@@ -695,6 +695,8 @@ async function loadData() {
   LS.prio = (data.prio_state && typeof data.prio_state === 'object') ? data.prio_state : {};
   LS.deleted = (data.deleted_state && typeof data.deleted_state === 'object') ? data.deleted_state : {};
   setStatus('Geladen', '');
+  console.log('[loadData] master keys:', Object.keys(master), 'todos:', masterData.todos.length, 'themen:', masterData.themen.length, 'manual:', LS.manual.length, 'done:', Object.keys(LS.done).length, 'deleted:', Object.keys(LS.deleted).length);
+  if (masterData.todos.length > 0) console.log('[loadData] first todo:', masterData.todos[0]);
   const stand = data.zuletzt_aktualisiert || master.zuletzt_aktualisiert || '';
   document.getElementById('lastUpdate').textContent = stand ? 'Stand: ' + stand : '';
   renderCurrentView();
@@ -1302,16 +1304,49 @@ async function doPasswordSetup() {
 initTheme();
 setView('todos');
 
+// Korrupte/abgelaufene Session aus localStorage räumen und zum Login.
+function purgeAuthAndShowLogin() {
+  try {
+    Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
+  } catch (_) {}
+  currentUser = null;
+  showLogin();
+}
+
+// Promise mit hartem Timeout — schützt gegen hängende Supabase-Calls
+// bei korruptem Refresh-Token im localStorage.
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(label + ' timeout')), ms))
+  ]);
+}
+
 (async () => {
-  const { data: { session } } = await sb.auth.getSession();
+  let session = null;
+  try {
+    const result = await withTimeout(sb.auth.getSession(), 4000, 'getSession');
+    session = result?.data?.session || null;
+  } catch (e) {
+    console.warn('Boot: getSession failed, purging session', e);
+    purgeAuthAndShowLogin();
+    return;
+  }
   if (session) {
     // Token serverseitig validieren — getSession() liest nur localStorage
     // und kann eine abgelaufene/ungültige Session zurückgeben.
-    const { data: { user }, error: userErr } = await sb.auth.getUser();
-    if (userErr || !user) {
-      console.warn('Boot: invalid session, signing out', userErr);
-      await sb.auth.signOut();
-      showLogin();
+    let user = null;
+    try {
+      const result = await withTimeout(sb.auth.getUser(), 4000, 'getUser');
+      if (result?.error || !result?.data?.user) {
+        console.warn('Boot: invalid session', result?.error);
+        purgeAuthAndShowLogin();
+        return;
+      }
+      user = result.data.user;
+    } catch (e) {
+      console.warn('Boot: getUser failed', e);
+      purgeAuthAndShowLogin();
       return;
     }
     currentUser = user;
