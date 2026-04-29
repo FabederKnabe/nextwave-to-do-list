@@ -543,7 +543,7 @@ body{
         </div>
         <div class="search-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="search" class="search-input" id="searchInput" name="todo-search" placeholder="Suchen…" autocomplete="off" oninput="renderCurrentView()"/>
+          <input type="search" class="search-input" id="searchInput" name="suche-noac-x9k2" placeholder="Suchen…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" oninput="searchQuery=this.value;renderCurrentView()"/>
         </div>
         <button class="btn btn-sm" id="clearDoneBtn" onclick="clearAllDone()" style="display:none;margin-left:auto">Erledigte löschen</button>
       </div>
@@ -636,6 +636,7 @@ let masterData = { todos: [], themen: [] };
 let statusFilter = 'open';
 let currentView = 'todos';
 let currentUser = null;
+let searchQuery = '';
 
 const COL_BY_KEY = { done: 'done_state', prio: 'prio_state', manual: 'manual_entries', deleted: 'deleted_state' };
 
@@ -695,8 +696,6 @@ async function loadData() {
   LS.prio = (data.prio_state && typeof data.prio_state === 'object') ? data.prio_state : {};
   LS.deleted = (data.deleted_state && typeof data.deleted_state === 'object') ? data.deleted_state : {};
   setStatus('Geladen', '');
-  console.log('[loadData] master keys:', Object.keys(master), 'todos:', masterData.todos.length, 'themen:', masterData.themen.length, 'manual:', LS.manual.length, 'done:', Object.keys(LS.done).length, 'deleted:', Object.keys(LS.deleted).length);
-  if (masterData.todos.length > 0) console.log('[loadData] first todo:', masterData.todos[0]);
   const stand = data.zuletzt_aktualisiert || master.zuletzt_aktualisiert || '';
   document.getElementById('lastUpdate').textContent = stand ? 'Stand: ' + stand : '';
   renderCurrentView();
@@ -767,58 +766,40 @@ function parseDate(q) {
 const PRIO_LABELS = { 0: 'Kritisch', 1: 'Hoch', 2: 'Mittel', 3: 'Niedrig' };
 
 function renderTodos() {
-  try { _renderTodosInner(); }
-  catch (e) { console.error('[renderTodos] EXCEPTION:', e, e?.stack); }
-}
-function _renderTodosInner() {
-  console.log('[rT 1] ENTER, masterData.todos=', masterData.todos.length);
   const manualTodos = LS.manual.filter(t => t._type === 'todo');
-  console.log('[rT 2] manualTodos:', manualTodos.length);
   const raw = [...masterData.todos, ...manualTodos];
-  console.log('[rT 3] raw:', raw.length);
   const manualSet = new Set(manualTodos.map(t => t.id || t.text || ''));
   const seenKeys = {};
-  console.log('[rT 4] starting map');
   // Filter out deleted items
-  const all = raw.map((t, idx) => {
-    let key;
-    try { key = tid(t); } catch (e) { console.error('[rT map] tid threw at idx', idx, t, e); throw e; }
+  const all = raw.map(t => {
+    let key = tid(t);
     if (seenKeys[key] !== undefined) { seenKeys[key]++; key = key + '_' + seenKeys[key]; }
     else seenKeys[key] = 0;
     return { ...t, _key: key, _isManual: manualSet.has(t.id || t.text || '') };
   }).filter(t => !LS.deleted[t._key]);
-  console.log('[rT 5] all:', all.length);
 
   const open = all.filter(t => !LS.done[t._key]);
   const done = all.filter(t => LS.done[t._key]);
-  console.log('[rT 6] open:', open.length, 'done:', done.length);
 
-  // Update stats
   animateCount('sOpen', open.length);
   animateCount('sDone', done.length);
-  console.log('[rT 7] animated counts');
   document.getElementById('cAll').textContent = all.length;
   document.getElementById('cOpen').textContent = open.length;
   document.getElementById('cDone').textContent = done.length;
-  console.log('[rT 8] counters set');
 
   const pct = all.length > 0 ? Math.round((done.length / all.length) * 100) : 0;
   document.getElementById('heroPct').textContent = pct + '%';
   document.getElementById('progressFill').style.width = pct + '%';
-  console.log('[rT 9] hero set');
 
-  // Search
-  const q = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
-  console.log('[rT 10] q=', JSON.stringify(q), 'statusFilter=', statusFilter);
+  // Search-Query aus JS-State lesen — Browser-Autofill füllt das Suchfeld
+  // sonst mit E-Mail/Username und filtert alles weg.
+  const q = searchQuery.toLowerCase().trim();
 
   // Filter base
   let baseItems = statusFilter === 'open' ? open : statusFilter === 'done' ? done : all;
-  console.log('[rT 11] baseItems before search:', baseItems.length);
   if (q) baseItems = baseItems.filter(t => (t.text || '').toLowerCase().includes(q));
-  console.log('[rT 12] baseItems after search:', baseItems.length);
 
   if (!baseItems.length) {
-    console.log('[rT 13] EARLY RETURN — empty baseItems');
     document.getElementById('todoList').innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">
@@ -860,10 +841,7 @@ function _renderTodosInner() {
         </div>
       </div>`;
   }
-  console.log('[renderTodos] all:', all.length, 'open:', open.length, 'done:', done.length, 'baseItems:', baseItems.length, 'statusFilter:', statusFilter, 'groups:', { 0: groups[0].length, 1: groups[1].length, 2: groups[2].length, 3: groups[3].length }, 'html length:', html.length);
-  const listEl = document.getElementById('todoList');
-  console.log('[renderTodos] todoList element:', listEl, 'parent display:', listEl?.parentElement?.style.display, 'computed:', listEl ? getComputedStyle(listEl).display : 'NULL');
-  if (listEl) listEl.innerHTML = html;
+  document.getElementById('todoList').innerHTML = html;
 }
 
 function renderTodoRow(t) {
@@ -1128,7 +1106,6 @@ function setView(v) {
   renderCurrentView();
 }
 function renderCurrentView() {
-  console.log('[renderCurrentView] currentView=', currentView, 'masterData.todos=', masterData.todos.length);
   if (currentView === 'todos') renderTodos();
   else if (currentView === 'themen') renderThemen();
 }
@@ -1323,7 +1300,6 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-04-29-v8');
 initTheme();
 setView('todos');
 
@@ -1350,22 +1326,20 @@ function withTimeout(promise, ms, label) {
 function preCheckExpiredSession() {
   try {
     const sbKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
-    console.log('[boot] sb-* keys in localStorage:', sbKeys);
     const key = sbKeys.find(k => k.endsWith('-auth-token'));
-    if (!key) { console.log('[boot] no auth-token key'); return false; }
+    if (!key) return false;
     const raw = localStorage.getItem(key);
-    if (!raw) { console.log('[boot] auth-token empty'); return false; }
+    if (!raw) return false;
     const parsed = JSON.parse(raw);
     const expiresAt = parsed?.expires_at;
     const refreshToken = parsed?.refresh_token || '';
     const nowSec = Math.floor(Date.now() / 1000);
-    console.log('[boot] expires_at:', expiresAt, 'now:', nowSec, 'expired:', expiresAt < nowSec, 'refreshToken length:', refreshToken.length);
     // Abgelaufen ODER Refresh-Token sieht ungültig aus → purgen
     if (expiresAt && (expiresAt < nowSec || refreshToken.length < 20)) {
       console.warn('[boot] expired or invalid session, purging');
       return true;
     }
-  } catch (e) { console.warn('[boot] preCheck error:', e); }
+  } catch (_) {}
   return false;
 }
 
