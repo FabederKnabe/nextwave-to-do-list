@@ -682,6 +682,35 @@ async function loadData() {
 }
 
 /* ============================================================
+   REALTIME SYNC — todo_data Row 1
+   Hört auf Änderungen (INSERT/UPDATE/DELETE) und lädt neu.
+   ============================================================ */
+let realtimeChannel = null;
+
+function startRealtime() {
+  if (realtimeChannel) return;
+  realtimeChannel = sb
+    .channel('todo_data_row_1')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'todo_data', filter: 'id=eq.1' },
+      async () => {
+        await loadData();
+        setStatus('Synchronisiert', '');
+      })
+    .subscribe((status) => {
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        console.warn('Realtime channel:', status);
+      }
+    });
+}
+
+async function stopRealtime() {
+  if (!realtimeChannel) return;
+  await sb.removeChannel(realtimeChannel);
+  realtimeChannel = null;
+}
+
+/* ============================================================
    ID HELPERS
    ============================================================ */
 function tid(t) {
@@ -1225,6 +1254,7 @@ async function doPasswordSetup() {
   needsPasswordSetup = false;
   hideSetup();
   await loadData();
+  startRealtime();
 }
 
 /* ============================================================
@@ -1241,7 +1271,8 @@ setView('todos');
     if (needsPasswordSetup) {
       showSetup();
     } else {
-      loadData();
+      await loadData();
+      startRealtime();
     }
   } else {
     showLogin();
@@ -1260,7 +1291,7 @@ setView('todos');
   }
 })();
 
-sb.auth.onAuthStateChange((event, session) => {
+sb.auth.onAuthStateChange(async (event, session) => {
   if (event === 'PASSWORD_RECOVERY') {
     needsPasswordSetup = true;
     if (session) currentUser = session.user;
@@ -1276,9 +1307,11 @@ sb.auth.onAuthStateChange((event, session) => {
     if (needsPasswordSetup) {
       showSetup();
     } else if (!wasLoggedIn) {
-      loadData();
+      await loadData();
+      startRealtime();
     }
   } else if (event === 'SIGNED_OUT') {
+    await stopRealtime();
     currentUser = null;
     needsPasswordSetup = false;
     hideSetup();
