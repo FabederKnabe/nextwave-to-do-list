@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>nextWAVE Digital — To Do Liste</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -655,11 +658,25 @@ function genId() { return Date.now().toString(36) + Math.random().toString(36).s
 /* ============================================================
    DATA LOADING
    ============================================================ */
+function isAuthError(error) {
+  if (!error) return false;
+  const msg = (error.message || '').toLowerCase();
+  const code = error.code || '';
+  return error.status === 401 || error.status === 403
+      || code === 'PGRST301' || code === '42501'
+      || msg.includes('jwt') || msg.includes('token') || msg.includes('unauthorized');
+}
+
 async function loadData() {
   setStatus('Lade...', 'warn');
   const { data, error } = await sb.from('todo_data').select('master_data,manual_entries,done_state,prio_state,deleted_state,zuletzt_aktualisiert').eq('id', 1).single();
   if (error || !data) {
     console.error('loadData', error);
+    if (isAuthError(error)) {
+      setStatus('Sitzung abgelaufen', 'err');
+      await sb.auth.signOut();
+      return;
+    }
     masterData.todos = [];
     masterData.themen = [];
     setStatus('Laden fehlgeschlagen', 'err');
@@ -1181,8 +1198,25 @@ async function doPasswordReset() {
 }
 
 async function doLogout() {
-  await sb.auth.signOut();
-  // onAuthStateChange übernimmt
+  try {
+    await sb.auth.signOut();
+  } catch (e) {
+    console.warn('signOut failed, cleaning up locally', e);
+  }
+  // Defensive: lokal aufräumen, falls onAuthStateChange wegen Token-Fehler nicht feuert
+  await stopRealtime();
+  currentUser = null;
+  needsPasswordSetup = false;
+  hideSetup();
+  masterData = { todos: [], themen: [] };
+  LS.done = {}; LS.prio = {}; LS.manual = []; LS.deleted = {};
+  // Supabase-Session aus localStorage entfernen (falls signOut Token-Probleme hatte)
+  try {
+    Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
+  } catch (_) {}
+  renderCurrentView();
+  updateNavBadges();
+  showLogin();
 }
 
 /* ============================================================
@@ -1271,7 +1305,16 @@ setView('todos');
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
-    currentUser = session.user;
+    // Token serverseitig validieren — getSession() liest nur localStorage
+    // und kann eine abgelaufene/ungültige Session zurückgeben.
+    const { data: { user }, error: userErr } = await sb.auth.getUser();
+    if (userErr || !user) {
+      console.warn('Boot: invalid session, signing out', userErr);
+      await sb.auth.signOut();
+      showLogin();
+      return;
+    }
+    currentUser = user;
     hideLogin();
     if (needsPasswordSetup) {
       showSetup();
