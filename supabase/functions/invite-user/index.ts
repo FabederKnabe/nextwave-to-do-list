@@ -1,19 +1,19 @@
 // Edge Function: invite-user
 // Lädt einen neuen Nutzer per Supabase Auth Invite ein.
 // Aufruf nur durch authentifizierte Nutzer (JWT-Check).
-// Service-Role-Key wird als Secret SERVICE_ROLE_KEY erwartet.
+// Service-Role-Key wird als Secret SUPABASE_SERVICE_ROLE_KEY erwartet.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
-const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 console.log("[invite-user] boot", {
   has_url: !!SUPABASE_URL,
   has_anon: !!SUPABASE_ANON_KEY,
-  has_service: !!SERVICE_ROLE_KEY,
-  service_len: SERVICE_ROLE_KEY?.length ?? 0,
+  has_service: !!SUPABASE_SERVICE_ROLE_KEY,
+  service_len: SUPABASE_SERVICE_ROLE_KEY?.length ?? 0,
 });
 
 const CORS = {
@@ -36,11 +36,11 @@ Deno.serve(async (req) => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
     if (req.method !== "POST") return json(405, { ok: false, error: "Method not allowed" });
 
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SERVICE_ROLE_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
       console.error("[invite-user] missing env", {
         has_url: !!SUPABASE_URL,
         has_anon: !!SUPABASE_ANON_KEY,
-        has_service: !!SERVICE_ROLE_KEY,
+        has_service: !!SUPABASE_SERVICE_ROLE_KEY,
       });
       return json(500, { ok: false, error: "Server misconfigured (missing env)" });
     }
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
     console.log("[invite-user] inviting", email);
 
     // Admin-Client mit Service-Role darf inviteUserByEmail.
-    const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
     const { data: inviteData, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email);
