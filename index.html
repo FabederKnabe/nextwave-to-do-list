@@ -619,11 +619,8 @@ const SUPABASE_URL = 'https://eufqqvatktwzyrjzrhoi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1ZnFxdmF0a3R3enlyanpyaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDY2OTUsImV4cCI6MjA5Mjk4MjY5NX0.JaFG4n3Y223H7EsCxiD3skHdaNmnKU8yNHHQ6D3ZErU';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true,
-    storage: window.localStorage,
-    storageKey: 'nextwave-todo-auth'
+    detectSessionInUrl: true
   }
 });
 
@@ -1312,55 +1309,8 @@ console.log('[VERSION] index.html build 2026-04-30-v9');
 initTheme();
 setView('todos');
 
-// Korrupte/abgelaufene Session aus localStorage räumen und zum Login.
-function purgeAuthAndShowLogin() {
-  try {
-    Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
-  } catch (_) {}
-  currentUser = null;
-  showLogin();
-}
-
-// Promise mit hartem Timeout — schützt gegen hängende Supabase-Calls
-// bei korruptem Refresh-Token im localStorage.
-function withTimeout(promise, ms, label) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error(label + ' timeout')), ms))
-  ]);
-}
-
-// Schneller Pre-Check: abgelaufenen Token direkt aus localStorage erkennen,
-// statt 4s auf getSession() zu warten (Refresh hängt bei korruptem Token).
-function preCheckExpiredSession() {
-  try {
-    const sbKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
-    const key = sbKeys.find(k => k.endsWith('-auth-token'));
-    if (!key) return false;
-    const raw = localStorage.getItem(key);
-    if (!raw) return false;
-    const parsed = JSON.parse(raw);
-    const expiresAt = parsed?.expires_at;
-    const refreshToken = parsed?.refresh_token || '';
-    const nowSec = Math.floor(Date.now() / 1000);
-    // Abgelaufen ODER Refresh-Token sieht ungültig aus → purgen
-    if (expiresAt && (expiresAt < nowSec || refreshToken.length < 20)) {
-      console.warn('[boot] expired or invalid session, purging');
-      return true;
-    }
-  } catch (_) {}
-  return false;
-}
-
 (async () => {
-  let session = null;
-  try {
-    const { data, error } = await sb.auth.getSession();
-    if (!error) session = data.session;
-  } catch (e) {
-    console.warn('getSession failed:', e);
-    await sb.auth.signOut();
-  }
+  const { data: { session } } = await sb.auth.getSession();
 
   if (session) {
     currentUser = session.user;
@@ -1380,7 +1330,6 @@ function preCheckExpiredSession() {
       } else {
         errEl.textContent = initialHashError.desc || 'Login-Link konnte nicht verarbeitet werden.';
       }
-      // Hash entfernen, damit ein Reload die Fehlermeldung nicht erneut zeigt
       if (window.history && window.history.replaceState) {
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
@@ -1402,7 +1351,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     hideLogin();
     if (needsPasswordSetup) {
       showSetup();
-    } else if (realtimeChannel === null) {
+    } else {
       await loadData();
       startRealtime();
     }
