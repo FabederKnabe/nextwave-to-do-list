@@ -451,6 +451,7 @@ body{
 </style>
 </head>
 <body>
+<div id="appShell" style="display:none">
 <header class="header">
   <div class="brand">
     <img class="brand-logo" id="headerLogo" src="nextwave-logo-white.png" alt="nextWAVE Digital"/>
@@ -543,7 +544,7 @@ body{
         </div>
         <div class="search-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="search" class="search-input" id="searchInput" name="suche-noac-x9k2" placeholder="Suchen…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" oninput="searchQuery=this.value;renderCurrentView()"/>
+          <input type="search" class="search-input" id="searchInput" placeholder="Suchen…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" oninput="searchQuery=this.value;renderCurrentView()"/>
         </div>
         <button class="btn btn-sm" id="clearDoneBtn" onclick="clearAllDone()" style="display:none;margin-left:auto">Erledigte löschen</button>
       </div>
@@ -591,6 +592,7 @@ body{
   <span><span class="dot" id="statusDot"></span><span id="statusTxt">Bereit</span></span>
   <span id="lastUpdate"></span>
 </div>
+</div><!-- /appShell -->
 
 <script>
 /* ============================================================
@@ -1160,7 +1162,13 @@ function esc(s) {
 /* ============================================================
    AUTH (Supabase)
    ============================================================ */
+function showApp() { const el = document.getElementById('appShell'); if (el) el.style.display = ''; }
+function hideApp() { const el = document.getElementById('appShell'); if (el) el.style.display = 'none'; }
+
 function showLogin() {
+  hideApp();
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPw').value = '';
   document.getElementById('loginWrap').classList.add('open');
   document.getElementById('userDropdown').style.display = 'none';
   document.getElementById('userMenu').classList.remove('open');
@@ -1264,6 +1272,7 @@ async function sendInvite() {
    PASSWORT SETZEN — Invite + Recovery Flow
    ============================================================ */
 function showSetup() {
+  hideApp();
   document.getElementById('setupWrap').classList.add('open');
   document.getElementById('loginWrap').classList.remove('open');
   document.getElementById('userDropdown').style.display = 'none';
@@ -1302,6 +1311,7 @@ async function doPasswordSetup() {
   needsPasswordSetup = false;
   hideSetup();
   await loadData();
+  showApp();
   startRealtime();
 }
 
@@ -1309,6 +1319,7 @@ async function doPasswordSetup() {
    BOOT
    ============================================================ */
 console.log('[VERSION] index.html build 2026-04-30-v9');
+{ const _si = document.getElementById('searchInput'); if (_si) _si.value = ''; }
 initTheme();
 setView('todos');
 
@@ -1389,6 +1400,7 @@ function preCheckExpiredSession() {
       showSetup();
     } else {
       await loadData();
+      showApp();
       startRealtime();
     }
   } else {
@@ -1425,7 +1437,10 @@ sb.auth.onAuthStateChange(async (event, session) => {
       showSetup();
     } else if (!wasLoggedIn || !realtimeChannel) {
       await loadData();
+      showApp();
       startRealtime();
+    } else {
+      showApp();
     }
   } else if (event === 'SIGNED_OUT') {
     await stopRealtime();
@@ -1474,11 +1489,11 @@ sb.auth.onAuthStateChange(async (event, session) => {
     </div>
     <div class="login-field">
       <label>E-Mail</label>
-      <input type="email" id="loginUser" placeholder="name@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <input type="email" id="loginUser" placeholder="name@example.com" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
     <div class="login-field">
       <label>Passwort</label>
-      <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <input type="password" id="loginPw" placeholder="••••••••" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
     <button class="login-btn" id="loginBtn" onclick="doLogin()">Anmelden</button>
     <div class="login-error" id="loginError"></div>
