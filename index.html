@@ -1353,37 +1353,17 @@ function preCheckExpiredSession() {
 }
 
 (async () => {
-  if (preCheckExpiredSession()) {
-    purgeAuthAndShowLogin();
-    return;
-  }
   let session = null;
   try {
-    const result = await withTimeout(sb.auth.getSession(), 1500, 'getSession');
-    session = result?.data?.session || null;
+    const { data, error } = await sb.auth.getSession();
+    if (!error) session = data.session;
   } catch (e) {
-    console.warn('Boot: getSession failed, purging session', e);
-    purgeAuthAndShowLogin();
-    return;
+    console.warn('getSession failed:', e);
+    await sb.auth.signOut();
   }
+
   if (session) {
-    // Token serverseitig validieren — getSession() liest nur localStorage
-    // und kann eine abgelaufene/ungültige Session zurückgeben.
-    let user = null;
-    try {
-      const result = await withTimeout(sb.auth.getUser(), 4000, 'getUser');
-      if (result?.error || !result?.data?.user) {
-        console.warn('Boot: invalid session', result?.error);
-        purgeAuthAndShowLogin();
-        return;
-      }
-      user = result.data.user;
-    } catch (e) {
-      console.warn('Boot: getUser failed', e);
-      purgeAuthAndShowLogin();
-      return;
-    }
-    currentUser = user;
+    currentUser = session.user;
     hideLogin();
     if (needsPasswordSetup) {
       showSetup();
@@ -1416,7 +1396,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     showSetup();
     return;
   }
-  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+  if (event === 'SIGNED_IN') {
     if (!session) return;
     currentUser = session.user;
     hideLogin();
