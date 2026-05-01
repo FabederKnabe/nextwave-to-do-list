@@ -617,7 +617,15 @@ let needsPasswordSetup = (initialHashType === 'invite' || initialHashType === 'r
 
 const SUPABASE_URL = 'https://eufqqvatktwzyrjzrhoi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1ZnFxdmF0a3R3enlyanpyaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDY2OTUsImV4cCI6MjA5Mjk4MjY5NX0.JaFG4n3Y223H7EsCxiD3skHdaNmnKU8yNHHQ6D3ZErU';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: window.localStorage,
+    storageKey: 'nextwave-todo-auth'
+  }
+});
 
 /* ============================================================
    STATE — gehalten in LS-Objekt (Module-Variable, nicht localStorage).
@@ -1300,6 +1308,7 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
+console.log('[VERSION] index.html build 2026-04-30-v9');
 initTheme();
 setView('todos');
 
