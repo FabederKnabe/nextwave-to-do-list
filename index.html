@@ -1418,12 +1418,11 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
   if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
     if (!session) return;
-    const wasLoggedIn = currentUser !== null;
     currentUser = session.user;
     hideLogin();
     if (needsPasswordSetup) {
       showSetup();
-    } else if (!wasLoggedIn || !realtimeChannel) {
+    } else if (realtimeChannel === null) {
       await loadData();
       startRealtime();
     }
