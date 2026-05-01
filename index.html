@@ -1371,7 +1371,7 @@ function preCheckExpiredSession() {
   }
   let session = null;
   try {
-    const result = await withTimeout(sb.auth.getSession(), 1500, 'getSession');
+    const result = await sb.auth.getSession();
     session = result?.data?.session || null;
   } catch (e) {
     console.warn('Boot: getSession failed, purging session', e);
