@@ -1189,8 +1189,10 @@ function esc(s) {
    AUTH (Supabase)
    ============================================================ */
 function showLogin() {
+  const el = document.getElementById('loginWrap');
+  if (!el) return;
   document.getElementById('appShell').style.display = 'none';
-  document.getElementById('loginWrap').classList.add('open');
+  el.classList.add('open');
   document.getElementById('userDropdown').style.display = 'none';
   document.getElementById('userMenu').classList.remove('open');
   document.getElementById('loginError').textContent = '';
@@ -1199,8 +1201,10 @@ function showLogin() {
   document.getElementById('loginPw').value = '';
 }
 function hideLogin() {
+  const el = document.getElementById('loginWrap');
+  if (!el) return;
   document.getElementById('appShell').style.display = '';
-  document.getElementById('loginWrap').classList.remove('open');
+  el.classList.remove('open');
   document.getElementById('userDropdown').style.display = '';
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPw').value = '';
@@ -1296,7 +1300,9 @@ async function sendInvite() {
    PASSWORT SETZEN — Invite + Recovery Flow
    ============================================================ */
 function showSetup() {
-  document.getElementById('setupWrap').classList.add('open');
+  const el = document.getElementById('setupWrap');
+  if (!el) return;
+  el.classList.add('open');
   document.getElementById('loginWrap').classList.remove('open');
   document.getElementById('userDropdown').style.display = 'none';
   document.getElementById('userMenu').classList.remove('open');
@@ -1306,7 +1312,9 @@ function showSetup() {
   document.getElementById('setupPw2').value = '';
 }
 function hideSetup() {
-  document.getElementById('setupWrap').classList.remove('open');
+  const el = document.getElementById('setupWrap');
+  if (!el) return;
+  el.classList.remove('open');
   document.getElementById('userDropdown').style.display = '';
   document.getElementById('setupPw1').value = '';
   document.getElementById('setupPw2').value = '';
@@ -1340,7 +1348,7 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-05-06-v17');
+console.log('[VERSION] index.html build 2026-05-06-v18');
 initTheme();
 setView('todos');
 
