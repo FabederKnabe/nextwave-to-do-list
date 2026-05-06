@@ -1317,71 +1317,60 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-05-06-v11');
+console.log('[VERSION] index.html build 2026-05-06-v12');
 initTheme();
 setView('todos');
 
 (async () => {
-  // Kurz warten damit supabase-js den Token aus localStorage
-  // geladen und verifiziert hat (verhindert stille RLS-Blockade)
-  await new Promise(r => setTimeout(r, 150));
-  const { data: { session } } = await sb.auth.getSession();
-
-  if (session) {
-    currentUser = session.user;
-    hideLogin();
-    if (needsPasswordSetup) {
+  // onAuthStateChange ist die zuverlässige Quelle — auch nach Refresh.
+  // getSession() nur als Fallback für den Fall dass kein Event kommt.
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      needsPasswordSetup = true;
+      if (session) currentUser = session.user;
+      hideLogin();
       showSetup();
-    } else {
-      await loadData();
-      startRealtime();
+      return;
     }
-  } else {
-    showLogin();
-    if (initialHashError) {
-      const errEl = document.getElementById('loginError');
-      if (initialHashError.code === 'otp_expired') {
-        errEl.textContent = 'Dieser Einladungs- oder Reset-Link ist abgelaufen oder wurde bereits verwendet. Bitte einen neuen Link anfordern.';
+    if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+      if (!session) {
+        showLogin();
+        if (initialHashError) {
+          const errEl = document.getElementById('loginError');
+          if (initialHashError.code === 'otp_expired') {
+            errEl.textContent = 'Dieser Einladungs- oder Reset-Link ist abgelaufen oder wurde bereits verwendet. Bitte einen neuen Link anfordern.';
+          } else {
+            errEl.textContent = initialHashError.desc || 'Login-Link konnte nicht verarbeitet werden.';
+          }
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        }
+        return;
+      }
+      currentUser = session.user;
+      hideLogin();
+      if (needsPasswordSetup) {
+        showSetup();
       } else {
-        errEl.textContent = initialHashError.desc || 'Login-Link konnte nicht verarbeitet werden.';
+        await loadData();
+        startRealtime();
       }
-      if (window.history && window.history.replaceState) {
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
-      }
+      return;
     }
-  }
+    if (event === 'SIGNED_OUT') {
+      await stopRealtime();
+      currentUser = null;
+      needsPasswordSetup = false;
+      hideSetup();
+      masterData = { todos: [], themen: [] };
+      LS.done = {}; LS.prio = {}; LS.manual = []; LS.deleted = {};
+      renderCurrentView();
+      updateNavBadges();
+      showLogin();
+    }
+  });
 })();
-
-sb.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'PASSWORD_RECOVERY') {
-    needsPasswordSetup = true;
-    if (session) currentUser = session.user;
-    hideLogin();
-    showSetup();
-    return;
-  }
-  if (event === 'SIGNED_IN') {
-    if (!session) return;
-    currentUser = session.user;
-    hideLogin();
-    if (needsPasswordSetup) {
-      showSetup();
-    } else {
-      await loadData();
-      startRealtime();
-    }
-  } else if (event === 'SIGNED_OUT') {
-    await stopRealtime();
-    currentUser = null;
-    needsPasswordSetup = false;
-    hideSetup();
-    masterData = { todos: [], themen: [] };
-    LS.done = {}; LS.prio = {}; LS.manual = []; LS.deleted = {};
-    renderCurrentView();
-    updateNavBadges();
-    showLogin();
-  }
-});
 </script>
 
 <!-- Passwort setzen (nach Invite/Recovery) -->
