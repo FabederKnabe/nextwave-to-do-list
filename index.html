@@ -675,10 +675,16 @@ function isAuthError(error) {
       || msg.includes('jwt') || msg.includes('token') || msg.includes('unauthorized');
 }
 
-async function loadData() {
+async function loadData(_isRetry = false) {
   setStatus('Lade...', 'warn');
   document.getElementById('searchInput').value = '';
   const { data, error } = await sb.from('todo_data').select('master_data,manual_entries,done_state,prio_state,deleted_state,zuletzt_aktualisiert').eq('id', 1).single();
+  if (!data && !error && !_isRetry) {
+    // Stille RLS-Blockade — Session noch nicht bereit
+    setStatus('Verbinde...', 'warn');
+    setTimeout(() => loadData(true), 800);
+    return;
+  }
   if (error || !data) {
     console.error('loadData', error);
     if (isAuthError(error)) {
@@ -1311,11 +1317,14 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-05-06-v10');
+console.log('[VERSION] index.html build 2026-05-06-v11');
 initTheme();
 setView('todos');
 
 (async () => {
+  // Kurz warten damit supabase-js den Token aus localStorage
+  // geladen und verifiziert hat (verhindert stille RLS-Blockade)
+  await new Promise(r => setTimeout(r, 150));
   const { data: { session } } = await sb.auth.getSession();
 
   if (session) {
