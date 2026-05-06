@@ -642,6 +642,10 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
     storageKey: 'sb-eufqqvatktwzyrjzrhoi-auth-token',
     storage: cookieStorage,
+    lock: async (name, acquireTimeout, fn) => {
+      // Navigator Locks umgehen — direkt ausführen ohne Lock
+      return await fn();
+    },
   }
 });
 
@@ -1336,7 +1340,7 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-05-06-v16');
+console.log('[VERSION] index.html build 2026-05-06-v17');
 initTheme();
 setView('todos');
 
