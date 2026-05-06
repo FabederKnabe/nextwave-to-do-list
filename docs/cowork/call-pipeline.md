@@ -33,6 +33,18 @@ ffmpeg -y -i "C:\Videocalls\[DATEINAME].mp4" -vn -acodec libmp3lame -q:a 2 "C:\V
 C:\Python314\python.exe C:\Videocalls\transcribe.py "C:\Videocalls\output\[DATEINAME].mp3"
 ```
 
+`transcribe.py` liest das Whisper-Medium-Modell **direkt** aus
+`C:\Users\user\.cache\huggingface\hub\...` (kein Kopieren — das sprengt jede
+Sandbox). Das Audio wird vor der Transkription mit ffmpeg in 10-Minuten-Stücke
+gesplittet, jedes Segment einzeln transkribiert und anschließend gelöscht. Das
+hält den Speicherbedarf konstant niedrig und vermeidet FUSE-Crashes bei großen
+MP3-Dateien.
+
+Falls `faster-whisper` in der Sandbox installiert werden muss: immer mit
+`pip install --no-cache-dir faster-whisper` arbeiten und danach
+`pip cache purge` aufrufen, damit der pip-Cache nicht zusätzlich Speicher
+auffrisst.
+
 ### Schritt 4 — Transkript analysieren
 
 Lies C:\Videocalls\output\[DATEINAME].txt und extrahiere neue Einträge.
