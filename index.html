@@ -622,7 +622,10 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     autoRefreshToken: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    flowType: 'implicit',
+    persistSession: true,
+    storageKey: 'sb-eufqqvatktwzyrjzrhoi-auth-token',
   }
 });
 
@@ -1317,7 +1320,7 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-05-06-v12');
+console.log('[VERSION] index.html build 2026-05-06-v13');
 initTheme();
 setView('todos');
 
