@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="supabase.min.js?v=3"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--p0:oklch(0.7 0.16 25);--p1:oklch(0.78 0.13 80);--p2:oklch(0.72 0.1 200);--p3:oklch(0.7 0.08 280);--r:10px;--rl:14px;}
@@ -619,35 +618,182 @@ let needsPasswordSetup = (initialHashType === 'invite' || initialHashType === 'r
 
 const SUPABASE_URL = 'https://eufqqvatktwzyrjzrhoi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1ZnFxdmF0a3R3enlyanpyaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDY2OTUsImV4cCI6MjA5Mjk4MjY5NX0.JaFG4n3Y223H7EsCxiD3skHdaNmnKU8yNHHQ6D3ZErU';
-const cookieStorage = {
-  getItem(key) {
-    const match = document.cookie.match(new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)'));
-    return match ? decodeURIComponent(match[1]) : null;
+const STORAGE_KEY = 'nw_session';
+
+// Session in cookieStorage speichern (localStorage durch Edge Tracking Prevention blockiert)
+const Auth = {
+  _session: null,
+
+  _saveCookie(session) {
+    if (!session) {
+      document.cookie = STORAGE_KEY + '=; max-age=0; path=/; SameSite=Lax; Secure';
+      return;
+    }
+    const val = encodeURIComponent(JSON.stringify(session));
+    document.cookie = STORAGE_KEY + '=' + val + '; max-age=31536000; path=/; SameSite=Lax; Secure';
   },
-  setItem(key, value) {
-    const maxAge = 60 * 60 * 24 * 365; // 1 Jahr
-    document.cookie = encodeURIComponent(key) + '=' + encodeURIComponent(value)
-      + '; max-age=' + maxAge + '; path=/; SameSite=Lax; Secure';
+
+  _loadCookie() {
+    const match = document.cookie.match(new RegExp('(?:^|; )' + STORAGE_KEY + '=([^;]*)'));
+    if (!match) return null;
+    try { return JSON.parse(decodeURIComponent(match[1])); } catch { return null; }
   },
-  removeItem(key) {
-    document.cookie = encodeURIComponent(key) + '=; max-age=0; path=/; SameSite=Lax; Secure';
+
+  // Hash mit access_token (Invite/Recovery) konsumieren und Session daraus bauen
+  async _consumeHash() {
+    const h = window.location.hash || '';
+    if (!h.includes('access_token=')) return null;
+    const params = new URLSearchParams(h.replace(/^#/, ''));
+    const access_token = params.get('access_token');
+    if (!access_token) return null;
+    const refresh_token = params.get('refresh_token') || '';
+    const expires_in = parseInt(params.get('expires_in') || '3600', 10);
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+    let user = null;
+    try {
+      const res = await fetch(SUPABASE_URL + '/auth/v1/user', {
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + access_token }
+      });
+      if (res.ok) user = await res.json();
+    } catch (_) {}
+    const session = {
+      access_token,
+      refresh_token,
+      expires_at: Math.floor(Date.now() / 1000) + expires_in,
+      token_type: params.get('token_type') || 'bearer',
+      user
+    };
+    this._session = session;
+    this._saveCookie(session);
+    return session;
+  },
+
+  async signIn(email, password) {
+    const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) return { error: data };
+    this._session = data;
+    this._saveCookie(data);
+    return { data };
+  },
+
+  async signOut() {
+    if (this._session?.access_token) {
+      await fetch(SUPABASE_URL + '/auth/v1/logout', {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + this._session.access_token }
+      }).catch(() => {});
+    }
+    this._session = null;
+    this._saveCookie(null);
+  },
+
+  async refreshSession() {
+    const session = this._loadCookie();
+    if (!session?.refresh_token) return null;
+    const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: session.refresh_token })
+    });
+    if (!res.ok) { this._saveCookie(null); return null; }
+    const data = await res.json();
+    this._session = data;
+    this._saveCookie(data);
+    return data;
+  },
+
+  async getSession() {
+    // Hash zuerst — Invite/Recovery liefert Token im URL-Hash
+    const fromHash = await this._consumeHash();
+    if (fromHash) return fromHash;
+    const session = this._loadCookie();
+    if (!session) return null;
+    const exp = session.expires_at || 0;
+    if (Date.now() / 1000 > exp - 60) {
+      return await this.refreshSession();
+    }
+    this._session = session;
+    return session;
+  },
+
+  getAccessToken() {
+    return this._session?.access_token || null;
+  },
+
+  async resetPasswordForEmail(email, redirectTo) {
+    const res = await fetch(SUPABASE_URL + '/auth/v1/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ email, gotrue_meta_security: {}, redirect_to: redirectTo })
+    });
+    const data = await res.json();
+    if (!res.ok) return { error: data };
+    return { data };
+  },
+
+  async updatePassword(password) {
+    const token = this.getAccessToken();
+    if (!token) return { error: { message: 'Nicht eingeloggt' } };
+    const res = await fetch(SUPABASE_URL + '/auth/v1/user', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ password })
+    });
+    const data = await res.json();
+    if (!res.ok) return { error: data };
+    return { data };
   }
 };
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    flowType: 'implicit',
-    persistSession: true,
-    storageKey: 'sb-eufqqvatktwzyrjzrhoi-auth-token',
-    storage: cookieStorage,
-    lock: async (name, acquireTimeout, fn) => {
-      // Navigator Locks umgehen — direkt ausführen ohne Lock
-      return await fn();
-    },
+// Supabase REST API für Datenbankzugriffe
+const DB = {
+  async select(table, columns, filter) {
+    const token = Auth.getAccessToken();
+    const params = new URLSearchParams({ select: columns, ...filter });
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + params, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/vnd.pgrst.object+json'
+      }
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: res.statusText }));
+      error.status = res.status;
+      return { data: null, error };
+    }
+    const data = await res.json();
+    return { data, error: null };
+  },
+
+  async update(table, body, filter) {
+    const token = Auth.getAccessToken();
+    const params = new URLSearchParams(filter);
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + params, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: res.statusText }));
+      error.status = res.status;
+      return { error };
+    }
+    return { error: null };
   }
-});
+};
 
 /* ============================================================
    STATE — gehalten in LS-Objekt (Module-Variable, nicht localStorage).
@@ -674,7 +820,7 @@ async function saveField(stateKey) {
   const col = COL_BY_KEY[stateKey];
   if (!col) return;
   setStatus('Speichern...', 'warn');
-  const { error } = await sb.from('todo_data').update({ [col]: LS[stateKey] }).eq('id', 1);
+  const { error } = await DB.update('todo_data', { [col]: LS[stateKey] }, { id: 'eq.1' });
   if (error) {
     console.error('saveField', col, error);
     setStatus('Speichern fehlgeschlagen', 'err');
@@ -701,18 +847,22 @@ function isAuthError(error) {
 async function loadData(_isRetry = false) {
   setStatus('Lade...', 'warn');
   document.getElementById('searchInput').value = '';
-  const { data, error } = await sb.from('todo_data').select('master_data,manual_entries,done_state,prio_state,deleted_state,zuletzt_aktualisiert').eq('id', 1).single();
+  const { data, error } = await DB.select(
+    'todo_data',
+    'master_data,manual_entries,done_state,prio_state,deleted_state,zuletzt_aktualisiert',
+    { id: 'eq.1' }
+  );
   if (!data && !error && !_isRetry) {
-    // Stille RLS-Blockade — Session noch nicht bereit
     setStatus('Verbinde...', 'warn');
     setTimeout(() => loadData(true), 800);
     return;
   }
   if (error || !data) {
     console.error('loadData', error);
-    if (isAuthError(error)) {
+    if (error?.status === 401 || error?.status === 403) {
       setStatus('Sitzung abgelaufen', 'err');
-      await sb.auth.signOut();
+      await Auth.signOut();
+      showLogin();
       return;
     }
     masterData.todos = [];
@@ -740,32 +890,19 @@ async function loadData(_isRetry = false) {
 }
 
 /* ============================================================
-   REALTIME SYNC — todo_data Row 1
-   Hört auf Änderungen (INSERT/UPDATE/DELETE) und lädt neu.
+   REALTIME SYNC — Polling alle 30s
    ============================================================ */
-let realtimeChannel = null;
+let realtimeInterval = null;
 
 function startRealtime() {
-  if (realtimeChannel) return;
-  realtimeChannel = sb
-    .channel('todo_data_row_1')
-    .on('postgres_changes',
-      { event: '*', schema: 'public', table: 'todo_data', filter: 'id=eq.1' },
-      async () => {
-        await loadData();
-        setStatus('Synchronisiert', '');
-      })
-    .subscribe((status) => {
-      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-        console.warn('Realtime channel:', status);
-      }
-    });
+  if (realtimeInterval) return;
+  realtimeInterval = setInterval(async () => {
+    await loadData();
+  }, 30000);
 }
 
 async function stopRealtime() {
-  if (!realtimeChannel) return;
-  await sb.removeChannel(realtimeChannel);
-  realtimeChannel = null;
+  if (realtimeInterval) { clearInterval(realtimeInterval); realtimeInterval = null; }
 }
 
 /* ============================================================
@@ -1214,19 +1351,21 @@ async function doLogin() {
   const email = document.getElementById('loginUser').value.trim();
   const pw = document.getElementById('loginPw').value;
   const errEl = document.getElementById('loginError');
-  const infoEl = document.getElementById('loginInfo');
   const btn = document.getElementById('loginBtn');
   errEl.textContent = '';
-  infoEl.textContent = '';
   if (!email || !pw) { errEl.textContent = 'Bitte alle Felder ausfüllen.'; return; }
   btn.disabled = true;
-  const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+  const { error } = await Auth.signIn(email, pw);
   btn.disabled = false;
   if (error) {
     errEl.textContent = 'E-Mail oder Passwort falsch.';
     document.getElementById('loginPw').value = '';
+    return;
   }
-  // Erfolgsfall: onAuthStateChange übernimmt
+  currentUser = Auth._session?.user;
+  hideLogin();
+  await loadData();
+  startRealtime();
 }
 
 async function doPasswordReset() {
@@ -1237,28 +1376,19 @@ async function doPasswordReset() {
   infoEl.textContent = '';
   if (!email) { errEl.textContent = 'Bitte E-Mail-Adresse eingeben.'; return; }
   const redirectTo = window.location.origin + window.location.pathname;
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
-  if (error) errEl.textContent = error.message;
+  const { error } = await Auth.resetPasswordForEmail(email, redirectTo);
+  if (error) errEl.textContent = error.message || 'Fehler beim Senden.';
   else infoEl.textContent = 'E-Mail mit Reset-Link verschickt.';
 }
 
 async function doLogout() {
-  try {
-    await sb.auth.signOut();
-  } catch (e) {
-    console.warn('signOut failed, cleaning up locally', e);
-  }
-  // Defensive: lokal aufräumen, falls onAuthStateChange wegen Token-Fehler nicht feuert
   await stopRealtime();
+  await Auth.signOut();
   currentUser = null;
   needsPasswordSetup = false;
   hideSetup();
   masterData = { todos: [], themen: [] };
   LS.done = {}; LS.prio = {}; LS.manual = []; LS.deleted = {};
-  // Supabase-Session aus localStorage entfernen (falls signOut Token-Probleme hatte)
-  try {
-    Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
-  } catch (_) {}
   renderCurrentView();
   updateNavBadges();
   showLogin();
@@ -1284,7 +1414,21 @@ async function sendInvite() {
   btn.disabled = true;
   hint.style.color = '';
   hint.textContent = 'Sende Einladung...';
-  const { data, error } = await sb.functions.invoke('invite-user', { body: { email } });
+  let data = null, error = null;
+  try {
+    const token = Auth.getAccessToken();
+    const res = await fetch(SUPABASE_URL + '/functions/v1/invite-user', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email })
+    });
+    data = await res.json().catch(() => null);
+    if (!res.ok) error = { message: data?.error || res.statusText };
+  } catch (e) { error = { message: e.message }; }
   btn.disabled = false;
   if (error || !data?.ok) {
     hint.style.color = 'var(--p0)';
@@ -1329,7 +1473,7 @@ async function doPasswordSetup() {
   if (pw1.length < 8) { errEl.textContent = 'Passwort muss mindestens 8 Zeichen lang sein.'; return; }
   if (pw1 !== pw2) { errEl.textContent = 'Die Passwörter stimmen nicht überein.'; return; }
   btn.disabled = true;
-  const { error } = await sb.auth.updateUser({ password: pw1 });
+  const { error } = await Auth.updatePassword(pw1);
   btn.disabled = false;
   if (error) {
     errEl.textContent = error.message || 'Passwort konnte nicht gespeichert werden.';
@@ -1348,59 +1492,32 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-05-06-v18');
+console.log('[VERSION] index.html build 2026-05-06-v19');
 initTheme();
 setView('todos');
 
 (async () => {
-  // onAuthStateChange ist die zuverlässige Quelle — auch nach Refresh.
-  // getSession() nur als Fallback für den Fall dass kein Event kommt.
-  sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'PASSWORD_RECOVERY') {
-      needsPasswordSetup = true;
-      if (session) currentUser = session.user;
-      hideLogin();
+  const session = await Auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    hideLogin();
+    if (needsPasswordSetup) {
       showSetup();
-      return;
+    } else {
+      await loadData();
+      startRealtime();
     }
-    if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-      if (!session) {
-        showLogin();
-        if (initialHashError) {
-          const errEl = document.getElementById('loginError');
-          if (initialHashError.code === 'otp_expired') {
-            errEl.textContent = 'Dieser Einladungs- oder Reset-Link ist abgelaufen oder wurde bereits verwendet. Bitte einen neuen Link anfordern.';
-          } else {
-            errEl.textContent = initialHashError.desc || 'Login-Link konnte nicht verarbeitet werden.';
-          }
-          if (window.history && window.history.replaceState) {
-            window.history.replaceState(null, '', window.location.pathname + window.location.search);
-          }
-        }
-        return;
-      }
-      currentUser = session.user;
-      hideLogin();
-      if (needsPasswordSetup) {
-        showSetup();
+  } else {
+    showLogin();
+    if (initialHashError) {
+      const errEl = document.getElementById('loginError');
+      if (initialHashError.code === 'otp_expired') {
+        errEl.textContent = 'Dieser Link ist abgelaufen. Bitte einen neuen anfordern.';
       } else {
-        await loadData();
-        startRealtime();
+        errEl.textContent = initialHashError.desc || 'Login-Link konnte nicht verarbeitet werden.';
       }
-      return;
     }
-    if (event === 'SIGNED_OUT') {
-      await stopRealtime();
-      currentUser = null;
-      needsPasswordSetup = false;
-      hideSetup();
-      masterData = { todos: [], themen: [] };
-      LS.done = {}; LS.prio = {}; LS.manual = []; LS.deleted = {};
-      renderCurrentView();
-      updateNavBadges();
-      showLogin();
-    }
-  });
+  }
 })();
 </script>
 
