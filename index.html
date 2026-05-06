@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="supabase.min.js?v=2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--p0:oklch(0.7 0.16 25);--p1:oklch(0.78 0.13 80);--p2:oklch(0.72 0.1 200);--p3:oklch(0.7 0.08 280);--r:10px;--rl:14px;}
@@ -619,6 +619,21 @@ let needsPasswordSetup = (initialHashType === 'invite' || initialHashType === 'r
 
 const SUPABASE_URL = 'https://eufqqvatktwzyrjzrhoi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1ZnFxdmF0a3R3enlyanpyaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDY2OTUsImV4cCI6MjA5Mjk4MjY5NX0.JaFG4n3Y223H7EsCxiD3skHdaNmnKU8yNHHQ6D3ZErU';
+const cookieStorage = {
+  getItem(key) {
+    const match = document.cookie.match(new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : null;
+  },
+  setItem(key, value) {
+    const maxAge = 60 * 60 * 24 * 365; // 1 Jahr
+    document.cookie = encodeURIComponent(key) + '=' + encodeURIComponent(value)
+      + '; max-age=' + maxAge + '; path=/; SameSite=Lax; Secure';
+  },
+  removeItem(key) {
+    document.cookie = encodeURIComponent(key) + '=; max-age=0; path=/; SameSite=Lax; Secure';
+  }
+};
+
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     autoRefreshToken: true,
@@ -626,6 +641,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     flowType: 'implicit',
     persistSession: true,
     storageKey: 'sb-eufqqvatktwzyrjzrhoi-auth-token',
+    storage: cookieStorage,
   }
 });
 
@@ -1320,7 +1336,7 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-05-06-v14');
+console.log('[VERSION] index.html build 2026-05-06-v15');
 initTheme();
 setView('todos');
 
