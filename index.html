@@ -546,7 +546,7 @@ body{
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           <input type="search" class="search-input" id="searchInput" placeholder="Suchen…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" oninput="searchQuery=this.value;renderCurrentView()"/>
         </div>
-        <button class="btn btn-sm" id="clearDoneBtn" onclick="clearAllDone()" style="display:none;margin-left:auto">Erledigte löschen</button>
+        <button class="btn btn-sm" id="clearDoneBtn" onclick="(async()=>{ await clearAllDone() })()" style="display:none;margin-left:auto">Erledigte löschen</button>
       </div>
 
       <div id="todoList"></div>
@@ -564,7 +564,7 @@ body{
         <div class="add-row">
           <select id="mTyp"><option value="todo">To-do</option><option value="thema">Thema</option></select>
           <select id="mPrio"><option value="0">P0 — Kritisch</option><option value="1">P1 — Hoch</option><option value="2">P2 — Mittel</option><option value="3" selected>P3 — Niedrig</option></select>
-          <button class="btn btn-primary" onclick="addManual()">Hinzufügen</button>
+          <button class="btn btn-primary" onclick="(async()=>{ await addManual() })()">Hinzufügen</button>
         </div>
       </div>
     </div>
@@ -859,7 +859,7 @@ function renderTodoRow(t) {
   const ctx = t.kontext || t.details || '';
   return `<div class="todo-row ${isDone ? 'done' : ''}" id="row_${esc(key)}">
     <div class="todo-compact" onclick="toggleExpand('${esc(key)}',event)">
-      <button class="chk ${isDone ? 'on' : ''}" onclick="event.stopPropagation();toggleDone('${esc(key)}',this)" aria-label="Erledigt umschalten">
+      <button class="chk ${isDone ? 'on' : ''}" onclick="event.stopPropagation();(async(btn)=>{ await toggleDone('${esc(key)}',btn) })(this)" aria-label="Erledigt umschalten">
         <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
       </button>
       <div class="todo-body"><div class="todo-title">${esc(t.text || '')}</div></div>
@@ -870,22 +870,22 @@ function renderTodoRow(t) {
     ${ctx ? `<div class="todo-expanded">
       <div class="todo-kontext">${esc(ctx)}</div>
       <div class="todo-expanded-actions">
-        <select class="prio-select" onchange="setPrio('${esc(key)}',parseInt(this.value))">
+        <select class="prio-select" onchange="(async(v)=>{ await setPrio('${esc(key)}',parseInt(v)) })(this.value)">
           <option value="0" ${p === 0 ? 'selected' : ''}>P0 — Kritisch</option>
           <option value="1" ${p === 1 ? 'selected' : ''}>P1 — Hoch</option>
           <option value="2" ${p === 2 ? 'selected' : ''}>P2 — Mittel</option>
           <option value="3" ${p === 3 ? 'selected' : ''}>P3 — Niedrig</option>
         </select>
-        <button class="del-btn" onclick="deleteTodo('${esc(key)}',${t._isManual})">Löschen</button>
+        <button class="del-btn" onclick="(async()=>{ await deleteTodo('${esc(key)}',${t._isManual}) })()">Löschen</button>
       </div>
     </div>` : `<div class="todo-expanded" style="padding-left:52px"><div class="todo-expanded-actions" style="margin-top:0;padding-top:14px">
-      <select class="prio-select" onchange="setPrio('${esc(key)}',parseInt(this.value))">
+      <select class="prio-select" onchange="(async(v)=>{ await setPrio('${esc(key)}',parseInt(v)) })(this.value)">
         <option value="0" ${p === 0 ? 'selected' : ''}>P0 — Kritisch</option>
         <option value="1" ${p === 1 ? 'selected' : ''}>P1 — Hoch</option>
         <option value="2" ${p === 2 ? 'selected' : ''}>P2 — Mittel</option>
         <option value="3" ${p === 3 ? 'selected' : ''}>P3 — Niedrig</option>
       </select>
-      <button class="del-btn" onclick="deleteTodo('${esc(key)}',${t._isManual})">Löschen</button>
+      <button class="del-btn" onclick="(async()=>{ await deleteTodo('${esc(key)}',${t._isManual}) })()">Löschen</button>
     </div></div>`}
   </div>`;
 }
@@ -925,7 +925,7 @@ function renderThemen() {
       </div>
       <div class="thema-expanded">
         <div class="thema-detail">${esc(t.details || '')}</div>
-        ${manualKeys.has(key) ? `<div style="margin-top:12px"><button class="del-btn" onclick="event.stopPropagation();deleteManual('${esc(key)}')">Löschen</button></div>` : ''}
+        ${manualKeys.has(key) ? `<div style="margin-top:12px"><button class="del-btn" onclick="event.stopPropagation();(async()=>{ await deleteManual('${esc(key)}') })()">Löschen</button></div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -972,20 +972,20 @@ function setFilter(f) {
   renderTodos();
 }
 
-function toggleDone(key, btn) {
+async function toggleDone(key, btn) {
   const newVal = !LS.done[key];
   if (newVal) LS.done[key] = true; else delete LS.done[key];
   if (btn) {
     btn.classList.add('tick');
     setTimeout(() => btn.classList.remove('tick'), 400);
   }
-  saveField('done');
+  await saveField('done');
   setTimeout(() => { renderCurrentView(); updateNavBadges(); }, 280);
 }
 
-function setPrio(key, p) {
+async function setPrio(key, p) {
   LS.prio[key] = p;
-  saveField('prio');
+  await saveField('prio');
   renderCurrentView();
 }
 
@@ -1002,30 +1002,30 @@ async function addManual() {
   LS.manual.push(item);
   document.getElementById('mText').value = '';
   document.getElementById('mKontext').value = '';
-  saveField('manual');
-  saveField('prio');
+  await saveField('manual');
+  await saveField('prio');
   updateNavBadges();
   if (typ === 'todo') setView('todos');
   else setView('themen');
 }
 
-function deleteTodo(key, isManual) {
+async function deleteTodo(key, isManual) {
   if (!confirm('Diese Aufgabe wirklich löschen?')) return;
   if (isManual) {
     const bare = key.replace(/^(todo_|thema_)/, '');
     LS.manual = LS.manual.filter(t => t.id !== bare);
-    saveField('manual');
+    await saveField('manual');
   } else {
     LS.deleted[key] = true;
-    saveField('deleted');
+    await saveField('deleted');
   }
-  if (LS.done[key]) { delete LS.done[key]; saveField('done'); }
-  if (LS.prio[key] !== undefined) { delete LS.prio[key]; saveField('prio'); }
+  if (LS.done[key]) { delete LS.done[key]; await saveField('done'); }
+  if (LS.prio[key] !== undefined) { delete LS.prio[key]; await saveField('prio'); }
   renderCurrentView();
   updateNavBadges();
 }
 
-function clearAllDone() {
+async function clearAllDone() {
   const count = Object.keys(LS.done).length;
   if (count === 0) return;
   if (!confirm(`${count} erledigte Aufgaben endgültig löschen?`)) return;
@@ -1035,19 +1035,19 @@ function clearAllDone() {
     return !LS.done[key];
   });
   LS.done = {};
-  saveField('deleted');
-  saveField('manual');
-  saveField('done');
+  await saveField('deleted');
+  await saveField('manual');
+  await saveField('done');
   renderCurrentView();
   updateNavBadges();
 }
 
-function deleteManual(key) {
+async function deleteManual(key) {
   const bare = key.replace(/^(todo_|thema_)/, '');
   LS.manual = LS.manual.filter(t => t.id !== bare);
-  saveField('manual');
-  if (LS.done[key]) { delete LS.done[key]; saveField('done'); }
-  if (LS.prio[key] !== undefined) { delete LS.prio[key]; saveField('prio'); }
+  await saveField('manual');
+  if (LS.done[key]) { delete LS.done[key]; await saveField('done'); }
+  if (LS.prio[key] !== undefined) { delete LS.prio[key]; await saveField('prio'); }
   renderCurrentView();
   updateNavBadges();
 }
@@ -1311,7 +1311,7 @@ async function doPasswordSetup() {
 /* ============================================================
    BOOT
    ============================================================ */
-console.log('[VERSION] index.html build 2026-04-30-v9');
+console.log('[VERSION] index.html build 2026-05-06-v10');
 initTheme();
 setView('todos');
 
@@ -1415,6 +1415,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
       <input type="password" id="loginPw" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')doLogin()"/>
     </div>
     <button class="login-btn" id="loginBtn" onclick="doLogin()">Anmelden</button>
+    <p style="margin-top:12px;font-size:12px;opacity:0.45;text-align:center;">Im Inkognito-Modus wird die Sitzung beim Schließen des Tabs beendet.</p>
     <div class="login-error" id="loginError"></div>
     <div class="login-info" id="loginInfo"></div>
     <button class="login-link" onclick="doPasswordReset()">Passwort vergessen?</button>
