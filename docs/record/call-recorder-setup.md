@@ -3,6 +3,12 @@
 Vollautomatische Aufnahme + Pipeline fuer Mailbox-Meet-Calls auf Fabis Surface.
 
 ```
+Scheduled Task (AtLogon)
+        │
+        ▼
+watcher-supervisor.ps1  ──► startet watch-mailbox-call.ps1 als Subprocess
+        │                   restartet automatisch bei jedem Exit (5s Pause)
+        ▼
 Edge-Tab meet.mailbox.org ──► Watcher erkennt ──► record-call.ps1 (ffmpeg)
                                                          │
                                                   Edge-Tab zu
@@ -118,6 +124,7 @@ C:\Python314\python.exe `
 
 | Log | Pfad |
 |---|---|
+| Supervisor    | `C:\Videocalls\watcher-supervisor.log` |
 | Watcher       | `C:\Videocalls\watcher.log` |
 | Aufnahme      | `C:\Videocalls\record.log` |
 | Pipeline      | `C:\Videocalls\process.log` |
@@ -139,6 +146,11 @@ Remove-Item C:\Videocalls\.recording.lock -Force
 Restart-ScheduledTask -TaskName 'nextWAVE Call Watcher'
 ```
 
+**Watcher stirbt staendig:**
+`watcher-supervisor.log` zeigt Restart-Counter und Exit-Codes. Wenn
+`run #N` schnell hochzaehlt: Ursache in `watcher.log` (TICK-Eintraege,
+Trap-Eintraege, ERROR-Zeilen). Supervisor restartet automatisch alle 5s.
+
 **Retry-Task manuell stoppen/loeschen:**
 ```powershell
 Unregister-ScheduledTask -TaskName 'nextWAVE Push Retry' -Confirm:$false
@@ -159,6 +171,21 @@ Pipeline laeuft auch ohne, dann ohne Toasts.
 **Aufnahme leer (< 1 KB):**
 Pipeline bricht ab, Toast meldet "Aufnahme fehlgeschlagen oder leer".
 Mp3 in `C:\Videocalls\` pruefen, dann manuell loeschen.
+
+## Re-Install nach Update
+
+Wenn `watcher-supervisor.ps1` oder `setup-call-watcher.ps1` geaendert wurden,
+muss der Task neu registriert werden:
+
+```powershell
+# als Admin
+Stop-ScheduledTask -TaskName 'nextWAVE Call Watcher' -ErrorAction SilentlyContinue
+Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" |
+  Where-Object { $_.CommandLine -like '*watcher-supervisor*' -or $_.CommandLine -like '*watch-mailbox-call*' } |
+  ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+& C:\nextWAVE\nextwave-to-do-list\scripts\record\setup-call-watcher.ps1
+Start-ScheduledTask -TaskName 'nextWAVE Call Watcher'
+```
 
 ## Deinstallation
 
