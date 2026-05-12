@@ -102,10 +102,12 @@ try {
   $ffArgs = @('-y','-hide_banner','-nostdin')
 
   if ($hasSys -and $hasMic) {
+    # Mikro pre-amix verstaerken (volume=2.0), dann amix mit weights System=1 Mikro=2
+    $filterComplex = '[1:a]volume=2.0[mic];[0:a][mic]amix=inputs=2:duration=longest:dropout_transition=2:weights=1 2[a]'
     $ffArgs += @(
       '-f','dshow','-i',"audio=$SysDevice",
       '-f','dshow','-i',"audio=$MicDevice",
-      '-filter_complex','[0:a][1:a]amix=inputs=2:duration=longest:dropout_transition=2[a]',
+      '-filter_complex',$filterComplex,
       '-map','[a]'
     )
   } elseif ($hasSys) {
