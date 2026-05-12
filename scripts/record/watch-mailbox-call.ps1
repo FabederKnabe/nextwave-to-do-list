@@ -14,43 +14,74 @@
     {
       "mp3_path":    "C:\Videocalls\YYYYMMDD-HHMMSS.mp3",
       "watcher_pid": 1234,
-      "ffmpeg_pid":  5678,         # null bis record-call.ps1 setzt
+      "ffmpeg_pid":  5678,
       "started_at":  "ISO timestamp"
     }
 #>
 
 $ErrorActionPreference = 'Continue'
+$ProgressPreference    = 'SilentlyContinue'
 
+# --- Konfiguration ---
 $BaseDir       = 'C:\Videocalls'
 $LockfilePath  = Join-Path $BaseDir '.recording.lock'
 $LogFile       = Join-Path $BaseDir 'watcher.log'
-$RecordScript  = Join-Path $PSScriptRoot 'record-call.ps1'
-$ProcessScript = Join-Path $PSScriptRoot 'process-recording.ps1'
 $PollSeconds   = 5
 $EmptyPollsToStop = 3
+$HeartbeatEveryNIter = 12   # 12 * 5s = 60s
 
+# $PSScriptRoot-Fallback: bei -File mit nicht-absolutem Aufruf evtl. leer
+if ([string]::IsNullOrEmpty($PSScriptRoot)) {
+  if ($PSCommandPath) {
+    $ScriptDir = Split-Path -Parent $PSCommandPath
+  } else {
+    $ScriptDir = (Get-Location).Path
+  }
+} else {
+  $ScriptDir = $PSScriptRoot
+}
+$RecordScript  = Join-Path $ScriptDir 'record-call.ps1'
+$ProcessScript = Join-Path $ScriptDir 'process-recording.ps1'
+
+# --- Helpers ---
 function Write-Log {
   param([string]$Level, [string]$Message)
-  $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-  $line = "[$ts] $Level $Message"
-  if (-not (Test-Path -LiteralPath $BaseDir)) { New-Item -ItemType Directory -Path $BaseDir -Force | Out-Null }
-  $line | Out-File -FilePath $LogFile -Append -Encoding utf8
+  try {
+    $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    $line = "[$ts] $Level $Message"
+    if (-not (Test-Path -LiteralPath $BaseDir)) { New-Item -ItemType Directory -Path $BaseDir -Force | Out-Null }
+    $line | Out-File -FilePath $LogFile -Append -Encoding utf8
+  } catch { }
 }
+
+# BurntToast einmalig beim Start pruefen, dann cachen (kein wiederholter Modul-Scan im Hot-Path)
+$Script:BurntToastAvailable = $false
+try {
+  if (Get-Module -ListAvailable -Name BurntToast -ErrorAction SilentlyContinue) {
+    $Script:BurntToastAvailable = $true
+  }
+} catch { }
 
 function Send-Toast {
   param([string]$Title, [string]$Message)
-  if (Get-Module -ListAvailable -Name BurntToast) {
-    try {
-      Import-Module BurntToast -ErrorAction Stop
-      New-BurntToastNotification -Text $Title, $Message
-    } catch { }
-  }
+  if (-not $Script:BurntToastAvailable) { return }
+  try {
+    Import-Module BurntToast -ErrorAction Stop
+    New-BurntToastNotification -Text $Title, $Message
+  } catch { }
 }
 
 function Test-MailboxCallActive {
-  $procs = Get-Process msedge -ErrorAction SilentlyContinue |
-           Where-Object { $_.MainWindowTitle -match 'meet\.mailbox\.org' }
-  return ($null -ne $procs -and @($procs).Count -gt 0)
+  try {
+    $matches = @(
+      Get-Process msedge -ErrorAction SilentlyContinue |
+      Where-Object { $_.MainWindowTitle -and $_.MainWindowTitle -match 'meet\.mailbox\.org' }
+    )
+    return ($matches.Count -gt 0)
+  } catch {
+    Write-Log 'WARN' "Test-MailboxCallActive error: $($_.Exception.Message)"
+    return $false
+  }
 }
 
 function Start-Recording {
@@ -63,7 +94,12 @@ function Start-Recording {
     ffmpeg_pid  = $null
     started_at  = (Get-Date).ToString('o')
   }
-  ($lockData | ConvertTo-Json) | Out-File -LiteralPath $LockfilePath -Encoding utf8 -Force
+  try {
+    ($lockData | ConvertTo-Json) | Out-File -LiteralPath $LockfilePath -Encoding utf8 -Force
+  } catch {
+    Write-Log 'ERROR' "Could not write lockfile: $($_.Exception.Message)"
+    return $null
+  }
 
   $recArgs = @(
     '-NoProfile','-ExecutionPolicy','Bypass','-WindowStyle','Hidden',
@@ -71,7 +107,12 @@ function Start-Recording {
     '-OutputPath', "`"$mp3Path`"",
     '-LockfilePath', "`"$LockfilePath`""
   )
-  Start-Process -FilePath 'powershell.exe' -ArgumentList $recArgs -WindowStyle Hidden | Out-Null
+  try {
+    Start-Process -FilePath 'powershell.exe' -ArgumentList $recArgs -WindowStyle Hidden | Out-Null
+  } catch {
+    Write-Log 'ERROR' "Could not start record-call.ps1: $($_.Exception.Message)"
+    return $null
+  }
   Write-Log 'INFO' "Recording start -> $mp3Path"
   Send-Toast -Title 'nextWAVE Recorder' -Message "Aufnahme laeuft: $stamp.mp3"
   return $mp3Path
@@ -91,13 +132,12 @@ function Stop-Recording {
   }
 
   if ($ffmpegPid) {
-    try {
-      Stop-Process -Id $ffmpegPid -ErrorAction SilentlyContinue
-    } catch { }
-    & taskkill.exe /F /PID $ffmpegPid 2>$null | Out-Null
+    try { Stop-Process -Id $ffmpegPid -ErrorAction SilentlyContinue } catch { }
+    try { & taskkill.exe /F /PID $ffmpegPid 2>$null | Out-Null } catch { }
   } else {
-    # Fallback: alle ffmpeg-Prozesse killen (nur 1 Mailbox-Call gleichzeitig)
-    Get-Process ffmpeg -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    try {
+      Get-Process ffmpeg -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    } catch { }
   }
 
   Start-Sleep -Seconds 2
@@ -127,36 +167,71 @@ function Start-PostProcessing {
     '-File', "`"$ProcessScript`"",
     '-Mp3Path', "`"$Mp3Path`""
   )
-  Start-Process -FilePath 'powershell.exe' -ArgumentList $procArgs -WindowStyle Hidden | Out-Null
-  Write-Log 'INFO' "Pipeline started for $Mp3Path"
+  try {
+    Start-Process -FilePath 'powershell.exe' -ArgumentList $procArgs -WindowStyle Hidden | Out-Null
+    Write-Log 'INFO' "Pipeline started for $Mp3Path"
+  } catch {
+    Write-Log 'ERROR' "Could not start process-recording.ps1: $($_.Exception.Message)"
+  }
 }
 
-Write-Log 'INFO' "Watcher started (PID=$PID)"
+# --- Watch-Loop ---
+function Invoke-WatchLoop {
+  $emptyPolls = 0
+  $iter = 0
+  while ($true) {
+    $iter++
+    try {
+      $callActive = Test-MailboxCallActive
+      $hasLock    = Test-Path -LiteralPath $LockfilePath
 
-$emptyPolls = 0
+      if (($iter % $HeartbeatEveryNIter) -eq 1) {
+        Write-Log 'TICK' "iter=$iter callActive=$callActive hasLock=$hasLock emptyPolls=$emptyPolls"
+      }
+
+      if ($callActive -and -not $hasLock) {
+        Start-Recording | Out-Null
+        $emptyPolls = 0
+      }
+      elseif (-not $callActive -and $hasLock) {
+        $emptyPolls++
+        if ($emptyPolls -ge $EmptyPollsToStop) {
+          $mp3 = Stop-Recording
+          $emptyPolls = 0
+          if ($mp3) { Start-PostProcessing -Mp3Path $mp3 }
+        }
+      }
+      elseif ($callActive -and $hasLock) {
+        $emptyPolls = 0
+      }
+    } catch {
+      Write-Log 'ERROR' "Loop iter=$iter error: $($_.Exception.Message)"
+    }
+
+    try {
+      Start-Sleep -Seconds $PollSeconds
+    } catch {
+      Write-Log 'ERROR' "Start-Sleep error iter=${iter}: $($_.Exception.Message)"
+      Start-Sleep -Milliseconds ($PollSeconds * 1000)
+    }
+  }
+}
+
+# Top-level trap: faengt auch terminating errors, die sich aus dem Loop heraussprengen
+trap {
+  Write-Log 'FATAL' "Top-level trap: $($_.Exception.Message)"
+  continue
+}
+
+Write-Log 'INFO' "Watcher started (PID=$PID) ScriptDir=$ScriptDir BurntToast=$($Script:BurntToastAvailable)"
+
+# Endlos-Loop in Funktion eingekapselt: einzige Wege raus sind Kill von aussen
+# oder unbehandelter terminating error (vom trap geloggt).
 while ($true) {
   try {
-    $callActive = Test-MailboxCallActive
-    $hasLock    = Test-Path -LiteralPath $LockfilePath
-
-    if ($callActive -and -not $hasLock) {
-      Start-Recording | Out-Null
-      $emptyPolls = 0
-    }
-    elseif (-not $callActive -and $hasLock) {
-      $emptyPolls++
-      if ($emptyPolls -ge $EmptyPollsToStop) {
-        $mp3 = Stop-Recording
-        $emptyPolls = 0
-        if ($mp3) { Start-PostProcessing -Mp3Path $mp3 }
-      }
-    }
-    elseif ($callActive -and $hasLock) {
-      $emptyPolls = 0
-    }
+    Invoke-WatchLoop
   } catch {
-    Write-Log 'ERROR' "Loop error: $($_.Exception.Message)"
+    Write-Log 'FATAL' "Invoke-WatchLoop crashed: $($_.Exception.Message). Restart in 5s."
+    Start-Sleep -Seconds 5
   }
-
-  Start-Sleep -Seconds $PollSeconds
 }
