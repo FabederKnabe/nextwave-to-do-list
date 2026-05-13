@@ -90,6 +90,23 @@ function Get-HttpStatusFromError {
   return 0
 }
 
+function Get-HttpErrorBody {
+  param($ErrorRecord)
+  try {
+    $resp = $ErrorRecord.Exception.Response
+    if (-not $resp) { return '' }
+    $stream = $resp.GetResponseStream()
+    if (-not $stream) { return '' }
+    try { $stream.Position = 0 } catch { }
+    $reader = New-Object System.IO.StreamReader($stream)
+    $body = $reader.ReadToEnd()
+    try { $reader.Dispose() } catch { }
+    return ($body -replace '\s+', ' ').Trim()
+  } catch {
+    return ''
+  }
+}
+
 function Test-NetworkError {
   param($ErrorRecord)
   if ($ErrorRecord.Exception -is [System.Net.WebException]) {
@@ -176,10 +193,10 @@ function Invoke-PatchUpload {
     zuletzt_aktualisiert = $stamp
   }
 
-  $body = [ordered]@{
-    master_data          = $merged
-    zuletzt_aktualisiert = $stamp
-  } | ConvertTo-Json -Depth 20 -Compress
+  # Nur master_data als Top-Level-Key senden. Das zuletzt_aktualisiert
+  # gehoert NUR ins master_data-JSON, nicht als eigene Tabellenspalte -
+  # PostgREST lehnt ein doppeltes Top-Level-Feld mit HTTP 400 ab.
+  $body = @{ master_data = $merged } | ConvertTo-Json -Depth 20 -Compress
 
   $patchHeaders = @{
     'apikey'        = $AnonKey
@@ -284,12 +301,14 @@ foreach ($file in $patches) {
     } else {
       $errMsg = if ($lastError) { $lastError.Exception.Message } else { 'unknown error' }
       $statusInfo = if ($lastStatus -gt 0) { " (HTTP $lastStatus)" } else { '' }
+      $respBody = if ($lastError) { Get-HttpErrorBody $lastError } else { '' }
+      $bodyInfo = if ($respBody) { " body=$respBody" } else { '' }
       try {
         Move-Item -LiteralPath $file.FullName -Destination (Join-Path $FailedDir $file.Name) -Force
       } catch {
         Write-Log 'ERROR' "Could not move $($file.Name) to failed\: $($_.Exception.Message)"
       }
-      Write-Log 'FAIL' "$($file.Name)$statusInfo  $errMsg"
+      Write-Log 'FAIL' "$($file.Name)$statusInfo  $errMsg$bodyInfo"
     }
   }
 }
