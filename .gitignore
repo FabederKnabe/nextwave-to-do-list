@@ -9,6 +9,12 @@ desktop.ini
 *.swp
 *~
 
+# Claude Code local state
+.claude/
+
+# Local archives
+*.tgz
+
 # Local env / secrets
 .env
 .env.local
