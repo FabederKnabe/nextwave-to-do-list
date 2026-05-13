@@ -20,10 +20,18 @@ Voraussetzung: GEMINI_API_KEY env var, modules.json im selben Ordner.
 
 import os
 import sys
+import io
 import json
 import re
 from datetime import datetime
 from google import genai
+
+# Windows-Python-Default fuer stdout/stderr ist cp1252 - das verstuemmelt
+# deutsche Umlaute, sobald JSON nach stdout gedruckt und vom Aufrufer
+# als UTF-8 zurueckgelesen wird (process-recording.ps1). Hier erzwingen
+# wir UTF-8 unabhaengig vom OS-Default.
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
 
 API_KEY = os.environ.get('GEMINI_API_KEY')
 if not API_KEY:
@@ -106,4 +114,6 @@ text = re.sub(r'^```(?:json)?\s*', '', text)
 text = re.sub(r'\s*```$', '', text)
 
 parsed = json.loads(text)
-print(json.dumps(parsed, ensure_ascii=False, indent=2))
+# Direkt als UTF-8-Bytes nach stdout, umgeht jegliche Encoding-Layer.
+sys.stdout.buffer.write(json.dumps(parsed, ensure_ascii=False, indent=2).encode('utf-8'))
+sys.stdout.buffer.write(b'\n')

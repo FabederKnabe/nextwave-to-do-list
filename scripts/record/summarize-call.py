@@ -16,8 +16,15 @@ Voraussetzung: GEMINI_API_KEY env var.
 
 import os
 import sys
+import io
 from datetime import datetime
 from google import genai
+
+# Windows-Python-Default fuer stdout/stderr ist cp1252 - defensiv auf
+# UTF-8 setzen, falls die Pipeline-Glue irgendwann mal mehr als nur den
+# Pfad nach stdout erwartet oder Fehlermeldungen mit Umlauten kommen.
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
 
 API_KEY = os.environ.get('GEMINI_API_KEY')
 if not API_KEY:

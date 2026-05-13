@@ -55,6 +55,11 @@ function Invoke-PythonScript {
   param([string]$ScriptPath, [string]$InputArg)
   $tmpOut = [System.IO.Path]::GetTempFileName()
   $tmpErr = [System.IO.Path]::GetTempFileName()
+  # Python-stdout/stderr unter Windows ist default cp1252. Hier erzwingen
+  # wir UTF-8 - sonst landen deutsche Umlaute als Mojibake in den Patch-
+  # JSONs (Replacement Character U+FFFD im Frontend).
+  $prevPyEnc = $env:PYTHONIOENCODING
+  $env:PYTHONIOENCODING = 'utf-8'
   try {
     $proc = Start-Process -FilePath $PythonExe `
       -ArgumentList @("`"$ScriptPath`"", "`"$InputArg`"") `
@@ -71,6 +76,7 @@ function Invoke-PythonScript {
   } finally {
     Remove-Item -LiteralPath $tmpOut -Force -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $tmpErr -Force -ErrorAction SilentlyContinue
+    $env:PYTHONIOENCODING = $prevPyEnc
   }
 }
 
