@@ -6,22 +6,21 @@
   ffmpeg-PID ins Lockfile (JSON) ein und blockiert via WaitForExit bis
   der Watcher ffmpeg ueber das Lockfile killt.
 
-  Geraete sind hardcoded. Auto-Detection wurde entfernt:
-    - ffmpeg -list_devices schreibt nach stderr und exitet mit Code 1
-    - PowerShell 5.1 wandelt "2>&1" stderr-Zeilen in NativeCommandError
-    - $ErrorActionPreference='Stop' macht die erste solche Zeile terminierend
-  Resultat: Get-AudioDevices warf willkuerlich bevor das Audio-Section-
-  Parsing griff, sys/mic blieben false, Aufnahme brach ab.
+  Geraete sind hardcoded. Auto-Detection wurde entfernt (PS 5.1 +
+  ffmpeg-list_devices Output via 2>&1 brach das Parsing).
 
-  Falls sich die Device-Namen aendern: hier $SystemAudioDevice /
-  $MicrophoneDevice anpassen. Verfuegbare Namen einmalig pruefen via:
+  Argumentuebergabe via [System.Diagnostics.Process] mit manuell
+  gequoteter Command-Line. Start-Process -ArgumentList in PS 5.1
+  re-quoted Array-Elemente mit Klammern+Spaces falsch (verifiziert:
+  "Mikrofonarray (Realtek High Definition Audio)" landete bei ffmpeg
+  als nackter "Mikrofonarray").
+
+  Geraetenamen einmalig pruefen via:
     ffmpeg -hide_banner -list_devices true -f dshow -i dummy
 
   Parameter:
     -OutputPath   Ziel-MP3 (z.B. C:\Videocalls\20260101-180000.mp3)
     -LockfilePath Pfad des Lockfiles (z.B. C:\Videocalls\.recording.lock)
-
-  Aufruf erfolgt vom Watcher als detached PowerShell-Prozess.
 #>
 
 param(
@@ -69,54 +68,86 @@ function Update-Lockfile {
   }
 }
 
+# Windows-CommandLine-Quoting: jedes Argument das Whitespace oder Quote
+# enthaelt wird in doppelte Anfuehrungszeichen gewickelt, eingebettete
+# Quotes werden mit Backslash escaped.
+function Format-NativeArg {
+  param([string]$Arg)
+  if ([string]::IsNullOrEmpty($Arg)) { return '""' }
+  if ($Arg -match '[\s"]') {
+    $escaped = $Arg -replace '"', '\"'
+    return '"' + $escaped + '"'
+  }
+  return $Arg
+}
+
 try {
   $outDir = Split-Path -Parent $OutputPath
   if (-not (Test-Path -LiteralPath $outDir)) { New-Item -ItemType Directory -Path $outDir -Force | Out-Null }
 
   $ffmpegLog = "$OutputPath.ffmpeg.log"
 
-  # Array-Args umgehen jegliches PS-Quoting-Problem: jedes Element wird einzeln
-  # an CreateProcess uebergeben. Speziell der Mic-Name enthaelt Klammern und
-  # Leerzeichen, da gewinnt Array-Splatting gegen String-Interpolation.
   $ffmpegArgs = @(
     '-y','-hide_banner','-nostdin',
-    '-f','dshow','-i',"audio=$SystemAudioDevice",
-    '-f','dshow','-i',"audio=$MicrophoneDevice",
+    '-f','dshow','-i', "audio=$SystemAudioDevice",
+    '-f','dshow','-i', "audio=$MicrophoneDevice",
     '-filter_complex','[1:a]volume=2.0[mic];[0:a][mic]amix=inputs=2:duration=longest:dropout_transition=2:weights=1 2[a]',
     '-map','[a]','-acodec','libmp3lame','-q:a','4',
     $OutputPath
   )
+  $cmdLine = ($ffmpegArgs | ForEach-Object { Format-NativeArg $_ }) -join ' '
 
   Write-Log 'INFO' "Starting ffmpeg -> $OutputPath (stderr -> $ffmpegLog)"
-  Write-Log 'DEBUG' ("ffmpeg args: " + ($ffmpegArgs -join ' '))
+  Write-Log 'DEBUG' "ffmpeg cmdline: $cmdLine"
 
-  $proc = Start-Process -FilePath 'ffmpeg' `
-    -ArgumentList $ffmpegArgs `
-    -WindowStyle Hidden `
-    -PassThru `
-    -RedirectStandardError $ffmpegLog
+  $psi = New-Object System.Diagnostics.ProcessStartInfo
+  $psi.FileName               = 'ffmpeg.exe'
+  $psi.Arguments              = $cmdLine
+  $psi.UseShellExecute        = $false
+  $psi.CreateNoWindow         = $true
+  $psi.RedirectStandardError  = $true
+  $psi.RedirectStandardOutput = $true
 
-  if (-not $proc) {
-    throw "Start-Process returned null - ffmpeg konnte nicht gestartet werden"
+  $proc = New-Object System.Diagnostics.Process
+  $proc.StartInfo = $psi
+
+  if (-not $proc.Start()) {
+    throw "Process.Start() returned false - ffmpeg konnte nicht gestartet werden"
   }
 
   Update-Lockfile -FfmpegPid $proc.Id
   Write-Log 'OK' "ffmpeg started, PID=$($proc.Id) - waiting for exit"
 
-  # Blockiert bis ffmpeg stirbt - entweder gracefully, durch Watcher-Kill via
-  # Lockfile-PID, oder durch eigenen Crash.
+  # Streams async lesen damit Pipe-Buffer nicht blockt waehrend Aufnahme laeuft.
+  # ffmpeg schreibt v.a. Progress nach stderr (mit \r ueberschrieben).
+  $stderrTask = $proc.StandardError.ReadToEndAsync()
+  $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
+
   $proc.WaitForExit()
   $exitCode = $proc.ExitCode
 
-  $tail = ''
-  if (Test-Path -LiteralPath $ffmpegLog) {
-    try {
-      $tail = (Get-Content -LiteralPath $ffmpegLog -Tail 5 -Encoding utf8) -join ' | '
-    } catch { }
+  $stderrText = ''
+  $stdoutText = ''
+  try { $stderrText = $stderrTask.GetAwaiter().GetResult() } catch { $stderrText = "<stderr read failed: $($_.Exception.Message)>" }
+  try { $stdoutText = $stdoutTask.GetAwaiter().GetResult() } catch { }
+
+  try {
+    $logContent = ''
+    if ($stdoutText) { $logContent += "--- stdout ---`n$stdoutText`n" }
+    $logContent += "--- stderr ---`n$stderrText"
+    $logContent | Out-File -LiteralPath $ffmpegLog -Encoding utf8 -Force
+  } catch {
+    Write-Log 'WARN' "Could not write ffmpeg log $($ffmpegLog): $($_.Exception.Message)"
+  }
+
+  $stderrTail = ''
+  if ($stderrText) {
+    $lines = $stderrText -split "`r?`n" | Where-Object { $_ -ne '' }
+    $stderrTail = ($lines | Select-Object -Last 5) -join ' | '
   }
 
   if ($exitCode -ne 0) {
-    Write-Log 'ERROR' "ffmpeg exited with code $exitCode. stderr tail: $tail"
+    Write-Log 'ERROR' "ffmpeg exited with code $exitCode. stderr tail: $stderrTail"
   } else {
     Write-Log 'INFO' "ffmpeg exited cleanly (code 0)"
   }
