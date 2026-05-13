@@ -75,7 +75,7 @@ function Test-MailboxCallActive {
   try {
     $matches = @(
       Get-Process msedge -ErrorAction SilentlyContinue |
-      Where-Object { $_.MainWindowTitle -and $_.MainWindowTitle -match 'meet\.mailbox\.org' }
+      Where-Object { $_.MainWindowTitle -and $_.MainWindowTitle -match '(meet\.mailbox\.org|OpenTalk-Meeting)' }
     )
     return ($matches.Count -gt 0)
   } catch {
