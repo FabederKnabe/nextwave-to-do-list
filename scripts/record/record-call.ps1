@@ -54,7 +54,17 @@ function Send-Toast {
 }
 
 function Get-AudioDevices {
-  $output = & ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2>&1 | Out-String
+  # ffmpeg -list_devices schreibt alles nach stderr und exitet mit Code 1.
+  # In PowerShell 5.1 wandelt "2>&1" jede stderr-Zeile in einen NativeCommandError.
+  # Mit $ErrorActionPreference='Stop' wird die erste solche Zeile terminierend,
+  # daher hier lokal auf 'Continue' setzen.
+  $prevPref = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    $output = (& ffmpeg -hide_banner -list_devices true -f dshow -i dummy 2>&1 | Out-String)
+  } finally {
+    $ErrorActionPreference = $prevPref
+  }
   $lines = $output -split "`r?`n"
   $devices = New-Object System.Collections.Generic.List[string]
   $audioSection = $false
@@ -120,14 +130,22 @@ try {
 
   $ffArgs += @('-acodec','libmp3lame','-q:a','4',$OutputPath)
 
-  Write-Log 'INFO' "Starting ffmpeg -> $OutputPath"
-  $proc = Start-Process -FilePath 'ffmpeg' -ArgumentList $ffArgs -WindowStyle Hidden -PassThru
+  # ffmpeg-stderr in eigene Logdatei umlenken, damit Crashes nachvollziehbar sind.
+  $ffmpegLog = "$OutputPath.ffmpeg.log"
+  Write-Log 'INFO' "Starting ffmpeg -> $OutputPath (stderr -> $ffmpegLog)"
+  Write-Log 'DEBUG' ("ffmpeg args: " + ($ffArgs -join ' '))
+  $proc = Start-Process -FilePath 'ffmpeg' `
+    -ArgumentList $ffArgs `
+    -WindowStyle Hidden `
+    -PassThru `
+    -RedirectStandardError $ffmpegLog
   Update-Lockfile -FfmpegPid $proc.Id
   Write-Log 'OK' "ffmpeg started, PID=$($proc.Id)"
   exit 0
 }
 catch {
-  Write-Log 'ERROR' "record-call.ps1 failed: $($_.Exception.Message)"
+  $detail = ($_ | Out-String).Trim()
+  Write-Log 'ERROR' "record-call.ps1 failed: $detail"
   Send-Toast -Title 'nextWAVE Recorder' -Message "Aufnahme-Start fehlgeschlagen: $($_.Exception.Message)"
   exit 1
 }
