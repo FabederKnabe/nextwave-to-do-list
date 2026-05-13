@@ -22,8 +22,9 @@ $ErrorActionPreference = 'Stop'
 $TaskName    = 'nextWAVE Call Watcher'
 $ScriptPath  = Join-Path $PSScriptRoot 'watcher-supervisor.ps1'
 $WatcherPath = Join-Path $PSScriptRoot 'watch-mailbox-call.ps1'
+$VbsLauncher = Join-Path $PSScriptRoot 'launch-supervisor.vbs'
 
-foreach ($p in @($ScriptPath, $WatcherPath)) {
+foreach ($p in @($ScriptPath, $WatcherPath, $VbsLauncher)) {
   if (-not (Test-Path -LiteralPath $p)) {
     Write-Host "FEHLER: Script nicht gefunden: $p" -ForegroundColor Red
     exit 1
@@ -36,14 +37,13 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
   exit 1
 }
 
-$ActionArgs = @(
-  '-NoProfile'
-  '-ExecutionPolicy', 'Bypass'
-  '-WindowStyle', 'Hidden'
-  '-File', "`"$ScriptPath`""
-) -join ' '
+# VBScript-Bootstrap statt direktem powershell.exe-Aufruf.
+# Grund: PowerShell mit -WindowStyle Hidden stirbt unter AtLogon-Trigger
+# silently (Exit 0, kein Log). wscript.exe + VBS hat kein Window-Lifecycle-
+# Problem im Task-Scheduler-Kontext.
+$ActionArgs = "`"$VbsLauncher`""
 
-$Action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $ActionArgs
+$Action = New-ScheduledTaskAction -Execute 'wscript.exe' -Argument $ActionArgs
 
 $Trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 
