@@ -186,7 +186,7 @@ function Invoke-PatchUpload {
   $mergedOffen  = @((ConvertTo-Array $current.offene_punkte) + (ConvertTo-Array $patch.offene_punkte))
   $mergedThemen = @((ConvertTo-Array $current.themen)        + (ConvertTo-Array $patch.themen))
 
-  $merged = [ordered]@{
+  $merged = @{
     todos                = $mergedTodos
     offene_punkte        = $mergedOffen
     themen               = $mergedThemen
@@ -198,17 +198,26 @@ function Invoke-PatchUpload {
   # PostgREST lehnt ein doppeltes Top-Level-Feld mit HTTP 400 ab.
   $body = @{ master_data = $merged } | ConvertTo-Json -Depth 20 -Compress
 
+  # Body explizit als UTF-8 Bytes senden. Invoke-WebRequest mit String-Body
+  # codet in PS 5.1 default als ISO-8859-1 wenn der Content-Type kein
+  # charset enthaelt - deutsche Umlaute in Transcripts werden dann zu
+  # Mojibake und Supabase antwortet mit PGRST102 "Empty or invalid json".
+  $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+
+  $preview = if ($body.Length -gt 300) { $body.Substring(0, 300) + '...' } else { $body }
+  Write-Log 'DEBUG' "PATCH body chars=$($body.Length) bytes=$($bodyBytes.Length) preview=$preview"
+
   $patchHeaders = @{
     'apikey'        = $AnonKey
     'Authorization' = "Bearer $ServiceKey"
-    'Content-Type'  = 'application/json'
+    'Content-Type'  = 'application/json; charset=utf-8'
     'Prefer'        = 'return=minimal'
   }
 
   Invoke-WebRequest -Method Patch `
     -Uri $Endpoint `
     -Headers $patchHeaders `
-    -Body $body `
+    -Body $bodyBytes `
     -UseBasicParsing | Out-Null
 
   return @{
