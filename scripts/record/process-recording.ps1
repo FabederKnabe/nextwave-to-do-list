@@ -2,15 +2,17 @@
 <#
   process-recording.ps1
 
-  Vollautomatische Pipeline NACH Aufnahme:
-    1. transcribe.py        -> <basename>.txt
-    2. summarize-call.py    -> <basename>_summary.md  (Stufe 1, Gemini)
-    3. extract-action-items.py -> JSON (Stufe 2, Gemini)
-    4. JSON-Validierung: leer -> private, archiviert, kein Push
-    5. JSON nach C:\Videocalls\output\patches\YYYYMMDD-HHMMSS.json
-    6. push-patches.ps1 SYNCHRON ausfuehren
-    7. MP3 + TXT + Summary nach C:\Videocalls\done\
-    8. Toast mit Pipeline-Ergebnis
+  Pipeline NACH Aufnahme - Transkript-only Variante:
+    1. transcribe.py        -> <basename>.txt  (Whisper)
+    2. MP3-Metadata via ffprobe -> Dauer (Sekunden -> Minuten)
+    3. Markdown-Transkript schreiben nach
+       C:\Videocalls\done\transkripte\YYYY-MM-DD_HHMM_call-<timestamp>.md
+    4. MP3 + TXT nach C:\Videocalls\done\
+    5. Toast: "Transkript bereit zur Auswertung" + Pfad
+
+  Auswertung passiert manuell im Claude-Projekt (Webchat). Pipeline endet
+  hier - kein Gemini, kein Supabase-Push mehr. Siehe scripts/record/_unused/
+  fuer die alten Summarize/Extract-Skripte (Wiederverwendung moeglich).
 
   Aufruf:
     process-recording.ps1 -Mp3Path C:\Videocalls\YYYYMMDD-HHMMSS.mp3
@@ -22,16 +24,13 @@ param(
 
 $ErrorActionPreference = 'Continue'
 
-$BaseDir       = 'C:\Videocalls'
-$DoneDir       = Join-Path $BaseDir 'done'
-$PrivateDir    = Join-Path $DoneDir 'private'
-$PatchesDir    = Join-Path $BaseDir 'output\patches'
-$LogFile       = Join-Path $BaseDir 'process.log'
-$PythonExe     = 'C:\Python314\python.exe'
-$TranscribePy  = 'C:\Videocalls\transcribe.py'
-$SummarizePy   = Join-Path $PSScriptRoot 'summarize-call.py'
-$ExtractPy     = Join-Path $PSScriptRoot 'extract-action-items.py'
-$PushScript    = Join-Path $PSScriptRoot '..\push-patches.ps1'
+$BaseDir         = 'C:\Videocalls'
+$DoneDir         = Join-Path $BaseDir 'done'
+$TranscriptDir   = Join-Path $DoneDir 'transkripte'
+$LogFile         = Join-Path $BaseDir 'process.log'
+$PythonExe       = 'C:\Python314\python.exe'
+$TranscribePy    = 'C:\Videocalls\transcribe.py'
+$FfprobeExe      = 'ffprobe.exe'
 
 function Write-Log {
   param([string]$Level, [string]$Message)
@@ -56,8 +55,7 @@ function Invoke-PythonScript {
   $tmpOut = [System.IO.Path]::GetTempFileName()
   $tmpErr = [System.IO.Path]::GetTempFileName()
   # Python-stdout/stderr unter Windows ist default cp1252. Hier erzwingen
-  # wir UTF-8 - sonst landen deutsche Umlaute als Mojibake in den Patch-
-  # JSONs (Replacement Character U+FFFD im Frontend).
+  # wir UTF-8 - sonst landen deutsche Umlaute als Mojibake.
   $prevPyEnc = $env:PYTHONIOENCODING
   $env:PYTHONIOENCODING = 'utf-8'
   try {
@@ -80,18 +78,40 @@ function Invoke-PythonScript {
   }
 }
 
+function Get-Mp3DurationMinutes {
+  param([string]$Mp3Path)
+  try {
+    $out = & $FfprobeExe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 -- $Mp3Path 2>$null
+    if (-not $out) { return $null }
+    $secs = [double]$out
+    return [int][Math]::Round($secs / 60.0)
+  } catch {
+    Write-Log 'WARN' "ffprobe duration failed: $($_.Exception.Message)"
+    return $null
+  }
+}
+
+function ConvertTo-DateTimeFromStamp {
+  param([string]$Stamp)
+  # Stamp = YYYYMMDD-HHMMSS aus Filename
+  try {
+    return [datetime]::ParseExact($Stamp, 'yyyyMMdd-HHmmss', [System.Globalization.CultureInfo]::InvariantCulture)
+  } catch {
+    return $null
+  }
+}
+
 try {
   if (-not (Test-Path -LiteralPath $Mp3Path)) {
     throw "MP3 not found: $Mp3Path"
   }
 
-  foreach ($d in @($DoneDir, $PrivateDir, $PatchesDir)) {
+  foreach ($d in @($DoneDir, $TranscriptDir)) {
     if (-not (Test-Path -LiteralPath $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }
   }
 
   $basename = [System.IO.Path]::GetFileNameWithoutExtension($Mp3Path)
-  $txtPath = Join-Path $BaseDir "$basename.txt"
-  $summaryPath = Join-Path $BaseDir "$basename`_summary.md"
+  $txtPath  = Join-Path $BaseDir "$basename.txt"
 
   # --- 1. Transkription ---
   Write-Log 'INFO' "[$basename] Transcribe start"
@@ -104,71 +124,53 @@ try {
   }
   Write-Log 'OK' "[$basename] Transcribe done"
 
-  # --- 2. Summary (Stufe 1) ---
-  Write-Log 'INFO' "[$basename] Summarize start"
-  $r = Invoke-PythonScript -ScriptPath $SummarizePy -InputArg $txtPath
-  if ($r.ExitCode -ne 0) {
-    throw "summarize-call.py failed (exit $($r.ExitCode)): $($r.Stderr)"
+  # --- 2. Metadata: Datum/Uhrzeit aus Filename, Dauer aus MP3 ---
+  $callTime = ConvertTo-DateTimeFromStamp -Stamp $basename
+  if (-not $callTime) {
+    Write-Log 'WARN' "[$basename] Could not parse timestamp from filename, using file mtime"
+    $callTime = (Get-Item -LiteralPath $Mp3Path).LastWriteTime
   }
-  if (-not (Test-Path -LiteralPath $summaryPath)) {
-    throw "summarize-call.py did not produce $summaryPath"
-  }
-  Write-Log 'OK' "[$basename] Summarize done"
+  $durationMin = Get-Mp3DurationMinutes -Mp3Path $Mp3Path
 
-  # --- 3. Extract (Stufe 2) ---
-  Write-Log 'INFO' "[$basename] Extract start"
-  $r = Invoke-PythonScript -ScriptPath $ExtractPy -InputArg $summaryPath
-  if ($r.ExitCode -ne 0) {
-    throw "extract-action-items.py failed (exit $($r.ExitCode)): $($r.Stderr)"
-  }
-  $jsonText = $r.Stdout.Trim()
-  if (-not $jsonText) {
-    throw "extract-action-items.py returned empty stdout"
-  }
-  $parsed = $jsonText | ConvertFrom-Json
-  Write-Log 'OK' "[$basename] Extract done"
+  # --- 3. MP3 + TXT nach done\ verschieben (MP3-Pfad wird im MD referenziert) ---
+  $doneMp3 = Join-Path $DoneDir ([System.IO.Path]::GetFileName($Mp3Path))
+  $doneTxt = Join-Path $DoneDir ([System.IO.Path]::GetFileName($txtPath))
+  Move-Item -LiteralPath $Mp3Path -Destination $doneMp3 -Force -ErrorAction SilentlyContinue
+  Move-Item -LiteralPath $txtPath -Destination $doneTxt -Force -ErrorAction SilentlyContinue
 
-  # --- 4. Leer-Check ---
-  $tCount = @($parsed.todos).Count
-  $oCount = @($parsed.offene_punkte).Count
-  $hCount = @($parsed.themen).Count
-
-  if ($tCount -eq 0 -and $oCount -eq 0 -and $hCount -eq 0) {
-    Write-Log 'INFO' "[$basename] Empty patch - archiving as private"
-    foreach ($f in @($Mp3Path, $txtPath, $summaryPath)) {
-      if (Test-Path -LiteralPath $f) {
-        Move-Item -LiteralPath $f -Destination $PrivateDir -Force -ErrorAction SilentlyContinue
-      }
-    }
-    Send-Toast -Title 'nextWAVE Pipeline' -Message 'Kein relevanter Inhalt - vermutlich privater Call. Audio archiviert.'
-    exit 0
+  # --- 4. Markdown-Transkript schreiben ---
+  $transcriptText = ''
+  if (Test-Path -LiteralPath $doneTxt) {
+    $transcriptText = (Get-Content -LiteralPath $doneTxt -Raw -Encoding utf8).TrimEnd()
   }
 
-  # --- 5. JSON-Patch schreiben ---
-  $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-  $patchPath = Join-Path $PatchesDir "$stamp.json"
-  $jsonText | Out-File -LiteralPath $patchPath -Encoding utf8 -Force
-  Write-Log 'OK' "[$basename] Patch written -> $patchPath"
+  $mdName = ('{0:yyyy-MM-dd}_{0:HHmm}_call-{1}.md' -f $callTime, $basename)
+  $mdPath = Join-Path $TranscriptDir $mdName
 
-  # --- 6. push-patches.ps1 synchron ---
-  Write-Log 'INFO' "[$basename] Push start"
-  $pushResolved = Resolve-Path -LiteralPath $PushScript
-  & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $pushResolved.Path
-  $pushExit = $LASTEXITCODE
-  $pushStatus = if ($pushExit -eq 0) { 'erfolgreich' } else { 'in Retry' }
-  Write-Log 'INFO' "[$basename] Push exit=$pushExit ($pushStatus)"
+  $durationLine = if ($durationMin) { "$durationMin Min" } else { 'unbekannt' }
 
-  # --- 7. Dateien nach done\ ---
-  foreach ($f in @($Mp3Path, $txtPath, $summaryPath)) {
-    if (Test-Path -LiteralPath $f) {
-      Move-Item -LiteralPath $f -Destination $DoneDir -Force -ErrorAction SilentlyContinue
-    }
-  }
+  $md = @"
+# Call-Transkript
 
-  # --- 8. Toast ---
+- **Datum:** $($callTime.ToString('dd.MM.yyyy'))
+- **Uhrzeit:** $($callTime.ToString('HH:mm'))
+- **Dauer:** $durationLine
+- **MP3:** $doneMp3
+
+---
+
+## Transkript
+
+$transcriptText
+"@
+
+  $md | Out-File -LiteralPath $mdPath -Encoding utf8 -Force
+  Write-Log 'OK' "[$basename] Transkript-MD geschrieben -> $mdPath"
+
+  # --- 5. Toast ---
   Send-Toast -Title 'nextWAVE Pipeline' `
-    -Message "Call verarbeitet - $tCount Todos, $oCount offene Punkte, $hCount Themen | Push: $pushStatus"
-  Write-Log 'OK' "[$basename] Pipeline complete: $tCount todos, $oCount offen, $hCount themen, push=$pushStatus"
+    -Message "Transkript bereit zur Auswertung`n$mdPath"
+  Write-Log 'OK' "[$basename] Pipeline complete -> $mdPath"
 }
 catch {
   $msg = $_.Exception.Message
