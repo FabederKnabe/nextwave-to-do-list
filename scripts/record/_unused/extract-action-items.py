@@ -45,7 +45,7 @@ with open(summary_path, 'r', encoding='utf-8') as f:
     summary = f.read()
 
 # Modul-Liste laden
-modules_json_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modules.json')
+modules_json_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'modules.json')
 with open(modules_json_path, 'r', encoding='utf-8') as f:
     modules = json.load(f)
 
@@ -82,9 +82,22 @@ Verfuegbare Module (slug: label - beschreibung):
 {modules_text}
 
 Schemas:
-todos:           {{id, text (1 Zeile aktionsorientiert), kontext (2-3 Saetze, bei Kundencall mit Kundenname), deadline (null falls nicht genannt), person ("fabian" oder "iris"), quelle ("Call {today_human}"), type, module, complexity}}
-offene_punkte:   {{id, text, kontext (2-3 Saetze), quelle ("Call {today_human}"), module}}
-themen:          {{id, titel (1 Zeile praegnant), details (2-3 Saetze), quelle ("Call {today_human}"), module}}
+todos:           {{id, text (1 Zeile aktionsorientiert), kontext (detailliert, siehe unten - bei Kundencall mit Kundenname), deadline (null falls nicht genannt), person ("fabian" oder "iris"), quelle ("Call {today_human}"), type, module, complexity}}
+offene_punkte:   {{id, text, kontext (detailliert, siehe unten), quelle ("Call {today_human}"), module}}
+themen:          {{id, titel (1 Zeile praegnant), details (detailliert, siehe unten), quelle ("Call {today_human}"), module}}
+
+Fuer das Feld "kontext" bei Todos und "details" bei Themen: schreibe DETAILLIERT.
+Jeder Kontext-Eintrag soll enthalten:
+- Was genau das Problem/die Aufgabe ist (konkret, nicht generisch)
+- Warum es relevant ist oder was der Ausloeser war
+- Welche Auswirkungen es hat (wer ist betroffen, was funktioniert nicht)
+- Falls im Call erwaehnt: Loesungsansatz, Zeitrahmen, Abhaengigkeiten
+- Falls eine Deadline genannt wurde: explizit erwaehnen
+
+Beispiel SCHLECHT: "Fabian soll den Bug fixen."
+Beispiel GUT: "Die Kalkulations-Uebersicht hat einen Performance-Bug: bei Angeboten mit mehr als 50 Positionen friert der Browser ein. Betrifft alle Nutzer die grosse Leistungsverzeichnisse bearbeiten. Fabian schaetzt 2-3 Tage Aufwand. Wurde im Call als dringend eingestuft weil mehrere Kunden davon betroffen sind."
+
+Schreibe 2-4 Saetze pro Kontext-Eintrag. Lieber zu ausfuehrlich als zu knapp.
 
 Sprache: IMMER Deutsch.
 
@@ -104,7 +117,7 @@ Zusammenfassung:
 ---"""
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-2.5-pro',
     contents=PROMPT,
 )
 text = response.text.strip()
