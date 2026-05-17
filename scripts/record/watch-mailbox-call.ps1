@@ -22,6 +22,50 @@
 $ErrorActionPreference = 'Continue'
 $ProgressPreference    = 'SilentlyContinue'
 
+# --- Win32-Window-Enumeration ---
+# Get-Process MainWindowTitle ist nur fuer aktive Fenster gesetzt. Hintergrund-
+# Edge-Fenster haben leeren Titel -> Watcher denkt Call ist vorbei sobald User
+# kurz auf VS Code wechselt. Stattdessen: EnumWindows + GetWindowText liest
+# Titel ALLER sichtbaren Top-Level-Fenster.
+# Add-Type ist nicht idempotent: zweiter Aufruf wirft "type already exists".
+# Try-catch um Type-Check kapselt den Fall (PS-Session-Reuse).
+try { [Win32Windows] | Out-Null } catch {
+  Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
+public class Win32Windows {
+    public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+    [DllImport("user32.dll")]
+    public static extern bool EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+    [DllImport("user32.dll")]
+    public static extern int GetWindowTextLength(IntPtr hWnd);
+    [DllImport("user32.dll")]
+    public static extern bool IsWindowVisible(IntPtr hWnd);
+}
+"@
+}
+
+function Get-AllWindowTitles {
+  $titles = New-Object System.Collections.ArrayList
+  $callback = {
+    param($hWnd, $lParam)
+    if ([Win32Windows]::IsWindowVisible($hWnd)) {
+      $len = [Win32Windows]::GetWindowTextLength($hWnd)
+      if ($len -gt 0) {
+        $sb = New-Object System.Text.StringBuilder ($len + 1)
+        [Win32Windows]::GetWindowText($hWnd, $sb, $sb.Capacity) | Out-Null
+        [void]$titles.Add($sb.ToString())
+      }
+    }
+    return $true
+  }
+  [Win32Windows]::EnumWindows($callback, [IntPtr]::Zero) | Out-Null
+  return $titles
+}
+
 # --- Konfiguration ---
 $BaseDir       = 'C:\Videocalls'
 $LockfilePath  = Join-Path $BaseDir '.recording.lock'
@@ -73,11 +117,9 @@ function Send-Toast {
 
 function Test-MailboxCallActive {
   try {
-    $matches = @(
-      Get-Process msedge -ErrorAction SilentlyContinue |
-      Where-Object { $_.MainWindowTitle -and $_.MainWindowTitle -match '(meet\.mailbox\.org|OpenTalk-Meeting)' }
-    )
-    return ($matches.Count -gt 0)
+    $titles = Get-AllWindowTitles
+    $hits = @($titles | Where-Object { $_ -match '(meet\.mailbox\.org|OpenTalk-Meeting)' })
+    return ($hits.Count -gt 0)
   } catch {
     Write-Log 'WARN' "Test-MailboxCallActive error: $($_.Exception.Message)"
     return $false
