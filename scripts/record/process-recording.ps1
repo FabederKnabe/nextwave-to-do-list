@@ -2,20 +2,19 @@
 <#
   process-recording.ps1
 
-  TEMP: Gemini-Pipeline reaktiviert (Test gemini-2.5-pro).
-  Skripte liegen in scripts/record/_unused/ - werden von hier referenziert,
-  nicht zurueckkopiert. Push deaktiviert - JSON nur lokal zur Inspektion.
-  Bei schlechtem Output: diese Datei revertn.
+  Gemini-Pipeline + Plane-Push (Branch A2).
+  Summarize/Extract liegen in scripts/record/_unused/, push-to-plane.py in
+  scripts/record/ - alle von hier ueber $PSScriptRoot referenziert.
 
-  Pipeline NACH Aufnahme (TEST-Modus):
+  Pipeline NACH Aufnahme:
     1. transcribe.py        -> <basename>.txt
     2. summarize-call.py    -> <basename>_summary.md  (Stufe 1, Gemini 2.5 Pro, _unused/)
     3. extract-action-items.py -> JSON (Stufe 2, Gemini 2.5 Pro, _unused/)
-    4. JSON-Validierung: leer -> private, archiviert
-    5. JSON nach C:\Videocalls\output\patches\YYYYMMDD-HHMMSS.json (kein Push!)
-    6. Push DEAKTIVIERT
+    4. JSON-Validierung: keine Todos und keine Zusammenfassung -> private, archiviert
+    5. JSON nach C:\Videocalls\output\patches\YYYYMMDD-HHMMSS.json
+    6. push-to-plane.py <patch.json> -> Issues + Page in Plane
     7. MP3 + TXT + Summary nach C:\Videocalls\done\
-    8. Toast: "Call verarbeitet (TEST) - ..."
+    8. Toast: "Call verarbeitet - N Todos ..."
 
   Aufruf:
     process-recording.ps1 -Mp3Path C:\Videocalls\YYYYMMDD-HHMMSS.mp3
@@ -36,7 +35,9 @@ $PythonExe     = 'C:\Python314\python.exe'
 $TranscribePy  = 'C:\Videocalls\transcribe.py'
 $SummarizePy   = Join-Path $PSScriptRoot '_unused\summarize-call.py'
 $ExtractPy     = Join-Path $PSScriptRoot '_unused\extract-action-items.py'
-$PushScript    = Join-Path $PSScriptRoot '..\push-patches.ps1'
+# push-to-plane.py liegt direkt in scripts/record/ (NICHT in _unused/) -
+# eigener Pfad ueber $PSScriptRoot, nicht im selben Verzeichnis annehmen.
+$PushPy        = Join-Path $PSScriptRoot 'push-to-plane.py'
 
 function Write-Log {
   param([string]$Level, [string]$Message)
@@ -181,12 +182,11 @@ try {
   $parsed = $jsonText | ConvertFrom-Json
   Write-Log 'OK' "[$basename] Extract done"
 
-  # --- 4. Leer-Check ---
+  # --- 4. Leer-Check (neues Schema: todos + zusammenfassung) ---
   $tCount = @($parsed.todos).Count
-  $oCount = @($parsed.offene_punkte).Count
-  $hCount = @($parsed.themen).Count
+  $hasSummary = $parsed.zusammenfassung -and [string]$parsed.zusammenfassung.inhalt_markdown
 
-  if ($tCount -eq 0 -and $oCount -eq 0 -and $hCount -eq 0) {
+  if ($tCount -eq 0 -and -not $hasSummary) {
     Write-Log 'INFO' "[$basename] Empty patch - archiving as private"
     foreach ($f in @($Mp3Path, $txtPath, $summaryPath)) {
       if (Test-Path -LiteralPath $f) {
@@ -203,8 +203,16 @@ try {
   $jsonText | Out-File -LiteralPath $patchPath -Encoding utf8 -Force
   Write-Log 'OK' "[$basename] Patch written -> $patchPath"
 
-  # --- 6. Push deaktiviert (TEST-Modus, JSON nur lokal inspizieren) ---
-  Write-Log 'INFO' "[$basename] Push skipped (TEST mode)"
+  # --- 6. Push nach Plane (push-to-plane.py) ---
+  Send-PipelineToast -Status 'Push nach Plane...' -Indeterminate
+  Write-Log 'INFO' "[$basename] Push to Plane start -> $patchPath"
+  $push = Invoke-PythonScript -ScriptPath $PushPy -InputArg $patchPath
+  $pushOk = $push.ExitCode -eq 0
+  if ($pushOk) {
+    Write-Log 'OK' "[$basename] Push done: $($push.Stdout.Trim())"
+  } else {
+    Write-Log 'ERROR' "[$basename] Push failed (exit $($push.ExitCode)): $($push.Stderr.Trim()) $($push.Stdout.Trim())"
+  }
 
   # --- 7. Dateien nach done\ ---
   foreach ($f in @($Mp3Path, $txtPath, $summaryPath)) {
@@ -214,10 +222,13 @@ try {
   }
 
   # --- 8. Toast (Fertig - aktualisiert denselben Pipeline-Toast) ---
-  Send-PipelineToast `
-    -Status "Call verarbeitet (TEST) - $tCount Todos, $oCount offene Punkte, $hCount Themen" `
-    -NoProgress
-  Write-Log 'OK' "[$basename] Pipeline complete (TEST): $tCount todos, $oCount offen, $hCount themen"
+  if ($pushOk) {
+    Send-PipelineToast -Status "Call verarbeitet - $tCount Todos nach Plane gepusht" -NoProgress
+    Write-Log 'OK' "[$basename] Pipeline complete: $tCount todos pushed"
+  } else {
+    Send-PipelineToast -Status "Call verarbeitet - $tCount Todos, ABER Plane-Push fehlgeschlagen (siehe .failed.json)" -NoProgress
+    Write-Log 'WARN' "[$basename] Pipeline complete with push errors: $tCount todos"
+  }
 }
 catch {
   $msg = $_.Exception.Message
