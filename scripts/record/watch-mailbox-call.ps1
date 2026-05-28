@@ -118,7 +118,7 @@ function Send-Toast {
 function Test-MailboxCallActive {
   try {
     $titles = Get-AllWindowTitles
-    $hits = @($titles | Where-Object { $_ -match '(meet\.mailbox\.org|OpenTalk-Meeting)' })
+    $hits = @($titles | Where-Object { $_ -match '(meet\.mailbox\.org|OpenTalk-Meeting|mailbox Suite - Meet)' })
     return ($hits.Count -gt 0)
   } catch {
     Write-Log 'WARN' "Test-MailboxCallActive error: $($_.Exception.Message)"
