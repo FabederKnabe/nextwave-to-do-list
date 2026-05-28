@@ -3,38 +3,31 @@
   "workspace_slug": "craftmaster",
   "project_id": "b4238996-4f59-485f-a01c-5043e841d661",
   "states": {
-    "ai_inbox": "UUID_HIER_EINTRAGEN"
+    "ai_inbox": "c5860a7f-275e-49d8-b4bd-441feb509fc1"
   },
   "labels": {
-    "bug": "UUID_HIER_EINTRAGEN",
-    "feat": "UUID_HIER_EINTRAGEN",
-    "security": "UUID_HIER_EINTRAGEN",
-    "improvement": "UUID_HIER_EINTRAGEN",
-    "usability": "UUID_HIER_EINTRAGEN",
-    "mobile": "UUID_HIER_EINTRAGEN",
-    "ai": "UUID_HIER_EINTRAGEN"
+    "bug": "bbda50a7-13ee-40a2-bb70-d00771ccd011",
+    "feat": "96c94196-4af7-4edb-abf5-4fcd44bb19d4",
+    "security": "9cc7ea3e-b364-4aee-a3df-fe09b7126087",
+    "improvement": "187dfdac-7814-45b2-824f-13fdb440d6d2",
+    "usability": "00ef1473-ed9f-4751-8a98-1b05ea986b66",
+    "mobile": "540eaffb-dd51-4ba3-8448-c9cdaec6261a",
+    "ai": "43083728-bdaf-4475-beb2-4ac59ff8d5b2"
   },
   "modules": {
-    "aufmass": "UUID_HIER_EINTRAGEN",
-    "craftmaster-mobile": "UUID_HIER_EINTRAGEN",
-    "fuhrpark": "UUID_HIER_EINTRAGEN",
-    "kalkulation": "UUID_HIER_EINTRAGEN",
-    "material": "UUID_HIER_EINTRAGEN",
-    "personal": "UUID_HIER_EINTRAGEN",
-    "plantafel": "UUID_HIER_EINTRAGEN",
-    "planung": "UUID_HIER_EINTRAGEN",
-    "projekte": "UUID_HIER_EINTRAGEN",
-    "zeiten": "UUID_HIER_EINTRAGEN"
+    "aufmass": "ad1665c6-f010-4023-bc4a-07cb73c66551",
+    "craftmaster-mobile": "f7328128-79a1-4d8c-98a5-c73c47f4daed",
+    "fuhrpark": "9027ef89-5032-4c57-85af-05347f7a0f56",
+    "kalkulation": "105ae022-914e-4566-b4af-eae3cfc5fc05",
+    "material": "3e7803eb-680d-4780-b3b0-39b7e630a1cf",
+    "personal": "48d8da83-b06a-4f06-a4ba-dbee3bac07d8",
+    "plantafel": "6dc812d8-8623-49a6-aecc-5c1cbd69f452",
+    "planung": "4d9513f6-243f-4b30-9af1-a4a21dd8ab22",
+    "projekte": "2b8b9f30-ea07-40dc-8734-81f6342ea6cf",
+    "zeiten": "b3a208cb-4754-45ec-b67e-95de0690c3fd"
   },
   "members": {
-    "fabian": "UUID_HIER_EINTRAGEN",
-    "iris": "UUID_HIER_EINTRAGEN"
-  },
-  "estimates": {
-    "XS": 1,
-    "S": 2,
-    "M": 3,
-    "L": 5,
-    "XL": 8
+    "fabian": "06ecde64-72db-44eb-9eba-85eb53967a5c",
+    "iris": "47750134-776e-46a7-82ab-1ccc22f39ca3"
   }
 }

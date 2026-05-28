@@ -4,7 +4,9 @@ push-to-plane.py - Stufe 3 der Call-Pipeline (Branch A2)
 Ersetzt push-patches.ps1 (Supabase). Liest das von extract-action-items.py
 erzeugte Patch-JSON und pusht es in die self-hosted Plane-Instanz:
   - pro Todo ein Issue (+ optionale Modul-Zuordnung)
-  - die Call-Zusammenfassung als Plane-Page
+
+Die Call-Zusammenfassung wird NICHT nach Plane gepusht (Pages-API auf der
+Self-Hosted-Version 404) - sie liegt lokal als _summary.md im done-Ordner.
 
 Aufruf:
     python push-to-plane.py <patch.json>
@@ -17,7 +19,7 @@ Fehlerbehandlung:
     - 3 Versuche pro Request, Backoff 5s/15s/30s (bei 5xx/429/Netzwerk)
     - 401/403: harter Abbruch mit klarer Meldung
     - Netzwerk-/Restfehler: nicht gepushte Items -> <patch>.failed.json
-    - Exit 0 NUR wenn alle Items (Todos + Page) erfolgreich.
+    - Exit 0 NUR wenn alle Todos erfolgreich.
 
 Dependencies: stdlib + requests. Laeuft auf Windows / Python 3.14. UTF-8 durchgaengig.
 """
@@ -52,85 +54,6 @@ class AuthError(Exception):
 
 def is_placeholder(value):
     return (not value) or (isinstance(value, str) and value.startswith('UUID_HIER'))
-
-
-def md_to_html(md):
-    """Simpler Markdown->HTML-Converter (Headings, Listen, Absaetze, Bold/Italic).
-
-    Kein externes Package - reicht fuer Gemini-Markdown in Plane-Pages.
-    """
-    if not md:
-        return ""
-
-    lines = md.replace('\r\n', '\n').split('\n')
-    out = []
-    in_ul = False
-    in_ol = False
-
-    def close_lists():
-        nonlocal in_ul, in_ol
-        if in_ul:
-            out.append('</ul>')
-            in_ul = False
-        if in_ol:
-            out.append('</ol>')
-            in_ol = False
-
-    def inline(text):
-        # Erst escapen, dann Bold/Italic-Marker durch Tags ersetzen.
-        t = html.escape(text)
-        t = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', t)
-        t = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'<em>\1</em>', t)
-        t = re.sub(r'__(.+?)__', r'<strong>\1</strong>', t)
-        t = re.sub(r'(?<!_)_(?!_)(.+?)(?<!_)_(?!_)', r'<em>\1</em>', t)
-        return t
-
-    for raw in lines:
-        line = raw.rstrip()
-        stripped = line.strip()
-
-        if not stripped:
-            close_lists()
-            continue
-
-        # Headings
-        m = re.match(r'^(#{1,6})\s+(.*)$', stripped)
-        if m:
-            close_lists()
-            level = len(m.group(1))
-            out.append(f"<h{level}>{inline(m.group(2))}</h{level}>")
-            continue
-
-        # Unordered list
-        m = re.match(r'^[-*+]\s+(.*)$', stripped)
-        if m:
-            if in_ol:
-                out.append('</ol>')
-                in_ol = False
-            if not in_ul:
-                out.append('<ul>')
-                in_ul = True
-            out.append(f"<li>{inline(m.group(1))}</li>")
-            continue
-
-        # Ordered list
-        m = re.match(r'^\d+[.)]\s+(.*)$', stripped)
-        if m:
-            if in_ul:
-                out.append('</ul>')
-                in_ul = False
-            if not in_ol:
-                out.append('<ol>')
-                in_ol = True
-            out.append(f"<li>{inline(m.group(1))}</li>")
-            continue
-
-        # Paragraph
-        close_lists()
-        out.append(f"<p>{inline(stripped)}</p>")
-
-    close_lists()
-    return '\n'.join(out)
 
 
 def request_with_retry(method, url, headers, payload):
@@ -177,8 +100,12 @@ def post_issue(cfg, headers, todo, datum):
 
     kontext = html.escape(todo.get('kontext') or '')
     confidence = html.escape(str(todo.get('confidence') or ''))
+    complexity = html.escape(str(todo.get('complexity') or ''))
+    # Estimate-API auf der Self-Hosted-Plane-Version nicht verfuegbar (404).
+    # Complexity stattdessen in die Description schreiben (sichtbar bei Triage).
     description_html = (
         f"<p>{kontext}</p>"
+        f"<p><strong>Complexity:</strong> {complexity}</p>"
         f"<p><strong>Confidence:</strong> {confidence}</p>"
         f"<p><strong>Quelle:</strong> Call {html.escape(datum)}</p>"
     )
@@ -207,12 +134,6 @@ def post_issue(cfg, headers, todo, datum):
         else:
             log('WARN', f"Kein Member-UUID fuer person '{person}' - Issue ohne Assignee.")
 
-    # Estimate (complexity -> int aus Skala)
-    estimate_point = None
-    complexity = todo.get('complexity')
-    if complexity and complexity in cfg.get('estimates', {}):
-        estimate_point = cfg['estimates'][complexity]
-
     state_uuid = cfg['states'].get('ai_inbox')
 
     payload = {
@@ -226,8 +147,6 @@ def post_issue(cfg, headers, todo, datum):
         payload["labels"] = labels
     if assignees:
         payload["assignees"] = assignees
-    if estimate_point is not None:
-        payload["estimate_point"] = estimate_point
 
     resp = request_with_retry('POST', url, headers, payload)
     if resp.status_code not in (200, 201):
@@ -245,20 +164,6 @@ def post_module_issue(cfg, headers, module_uuid, issue_id):
     resp = request_with_retry('POST', url, headers, payload)
     if resp.status_code not in (200, 201):
         raise RuntimeError(f"Module-Issue-POST fehlgeschlagen (HTTP {resp.status_code}): {resp.text[:300]}")
-
-
-def post_page(cfg, headers, zusammenfassung):
-    base = cfg['base_url'].rstrip('/')
-    url = f"{base}/api/v1/workspaces/{cfg['workspace_slug']}/projects/{cfg['project_id']}/pages/"
-    payload = {
-        "name": zusammenfassung.get('titel') or 'Call-Zusammenfassung',
-        "description_html": md_to_html(zusammenfassung.get('inhalt_markdown') or ''),
-    }
-    resp = request_with_retry('POST', url, headers, payload)
-    if resp.status_code not in (200, 201):
-        raise RuntimeError(f"Page-POST fehlgeschlagen (HTTP {resp.status_code}): {resp.text[:300]}")
-    data = resp.json()
-    return data.get('id')
 
 
 def extract_datum(zusammenfassung):
@@ -283,10 +188,10 @@ def main():
         log('ERROR', "PLANE_API_TOKEN env var nicht gesetzt.")
         sys.exit(1)
 
-    with open(MAPPING_PATH, 'r', encoding='utf-8') as f:
+    with open(MAPPING_PATH, 'r', encoding='utf-8-sig') as f:
         cfg = json.load(f)
 
-    with open(patch_path, 'r', encoding='utf-8') as f:
+    with open(patch_path, 'r', encoding='utf-8-sig') as f:
         patch = json.load(f)
 
     headers = {
@@ -324,36 +229,21 @@ def main():
                 log('FAIL', f"Todo {idx} fehlgeschlagen: {e}")
                 failed_todos.append(todo)
 
-        # --- Zusammenfassung -> Page ---
-        page_ok = True
-        if zusammenfassung:
-            try:
-                page_id = post_page(cfg, headers, zusammenfassung)
-                log('OK', f"Page {page_id} angelegt: {zusammenfassung.get('titel')}")
-            except Exception as e:
-                page_ok = False
-                log('FAIL', f"Page fehlgeschlagen: {e}")
-
     except AuthError as e:
         log('ERROR', str(e))
         # Alles Nicht-Gepushte sichern (verbleibende Todos ab Abbruch unbekannt -
         # konservativ: alle noch nicht erfolgreich gepushten + Rest).
-        _write_failed(patch_path, {"todos": failed_todos or todos, "zusammenfassung": zusammenfassung})
+        _write_failed(patch_path, {"todos": failed_todos or todos})
         sys.exit(1)
     except requests.RequestException as e:
         log('ERROR', f"Netzwerkfehler nach Retries: {e}")
-        _write_failed(patch_path, {"todos": failed_todos or todos, "zusammenfassung": zusammenfassung})
+        _write_failed(patch_path, {"todos": failed_todos or todos})
         sys.exit(1)
 
-    log('INFO', f"{created}/{len(todos)} Todos erfolgreich, Page {'ok' if page_ok else 'FEHLER'}.")
+    log('INFO', f"{created}/{len(todos)} Todos erfolgreich.")
 
-    if failed_todos or not page_ok:
-        payload = {}
-        if failed_todos:
-            payload["todos"] = failed_todos
-        if not page_ok:
-            payload["zusammenfassung"] = zusammenfassung
-        _write_failed(patch_path, payload)
+    if failed_todos:
+        _write_failed(patch_path, {"todos": failed_todos})
         sys.exit(1)
 
     sys.exit(0)
