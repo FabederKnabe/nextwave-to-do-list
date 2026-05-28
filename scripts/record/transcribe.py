@@ -24,7 +24,7 @@ audio_path = sys.argv[1]
 output_path = os.path.splitext(audio_path)[0] + ".txt"
 
 # Modell large-v3-turbo (DE-Fine-Tune), CPU + int8 fuer AMD-Surface
-model = WhisperModel("TheChola/whisper-large-v3-turbo-german-faster-whisper", device="cpu", compute_type="int8")
+model = WhisperModel("cstr/whisper-large-v3-turbo-german-int8_float32", device="cpu", compute_type="int8")
 
 # Gesamt-Dauer via ffprobe fuer monotonen Fortschritt ueber Chunks hinweg.
 # Fallback: Per-Chunk-Progress (resettet pro Chunk, schlechtere UX, aber kein Crash).
