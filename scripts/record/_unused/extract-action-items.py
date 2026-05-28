@@ -1,21 +1,24 @@
 """
-extract-action-items.py - Stufe 2 der Call-Pipeline
+extract-action-items.py - Stufe 2 der Call-Pipeline (Branch A2: Plane)
 
 Liest Markdown-Summary (Output von summarize-call.py), schickt an
-Gemini 2.5 Flash, gibt strukturiertes Patch-JSON nach stdout aus.
+Gemini 2.5 Pro, gibt strukturiertes JSON nach stdout aus.
 
-Schema:
-    todos:         {id, text, kontext, deadline, person, quelle, type, module, complexity}
-    offene_punkte: {id, text, kontext, quelle, module}
-    themen:        {id, titel, details, quelle, module}
-    zuletzt_aktualisiert: "DD.MM.YYYY HH:MM"
+Schema (NEU - nur noch zwei Bloecke fuer Plane):
+    todos: [{text, kontext, type, module, complexity, person, confidence}]
+    zusammenfassung: {titel, teilnehmer, dauer_min, hauptthemen,
+                      entscheidungen, inhalt_markdown}
+
+Es gibt KEINE offene_punkte/themen mehr. Alles mit Handlungsbedarf wird ein
+Todo (grosszuegig extrahieren - Triage macht der Mensch). Reine Information
+ohne Handlungsbedarf landet in der zusammenfassung.
 
 Aufruf:
     python extract-action-items.py <summary.md>
 
 Output: JSON nach stdout.
 
-Voraussetzung: GEMINI_API_KEY env var, modules.json im selben Ordner.
+Voraussetzung: GEMINI_API_KEY env var, modules.json im Parent-Ordner.
 """
 
 import os
@@ -44,72 +47,108 @@ summary_path = sys.argv[1]
 with open(summary_path, 'r', encoding='utf-8') as f:
     summary = f.read()
 
-# Modul-Liste laden
+# Modul-Liste laden (liegt im Parent-Ordner, scripts/record/modules.json)
 modules_json_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'modules.json')
 with open(modules_json_path, 'r', encoding='utf-8') as f:
     modules = json.load(f)
 
 modules_text = "\n".join([f"- {m['slug']}: {m['label']} - {m['description']}" for m in modules])
 
-today = datetime.now().strftime('%Y%m%d')
 today_human = datetime.now().strftime('%d.%m.%Y')
 
 call_type_match = re.search(r'\*\*Call-Typ:\*\*\s*(\w+)', summary)
 call_type = call_type_match.group(1) if call_type_match else "sonstiges"
 
-PROMPT = f"""Du extrahierst strukturierte Action Items aus der folgenden Call-Zusammenfassung.
+PROMPT = f"""Du extrahierst aus der folgenden Call-Zusammenfassung strukturierte Daten fuer das Plane-Aufgabentool.
 
 Der Call-Typ ist: {call_type}
+Datum des Calls: {today_human}
 
-Extrahiere drei Listen:
-- todos: konkrete Aufgaben mit klarem Owner (nur fabian oder iris - bei Kundencall trotzdem fabian/iris als Owner, Kundenname im kontext)
-- offene_punkte: ungeklaerte Themen, Fragen, Entscheidungen die noch ausstehen
-- themen: besprochene Inhalte mit Ergebnis/Entscheidung
+Es gibt NUR ZWEI Bloecke: "todos" und "zusammenfassung".
 
-ID-Format: call-{today}-NNN (NNN = laufende Nummer ab 001, ueber alle 3 Listen gemeinsam).
+=== GRUNDREGEL ===
+Alles was auch nur ansatzweise nach Handlungsbedarf klingt, wird ein TODO. Dazu zaehlen:
+- konkrete Aufgaben
+- Entscheidungen mit Handlungsbedarf
+- offene Punkte die noch geklaert werden muessen
+- konzeptionelle/strategische Themen die untersucht oder konzeptioniert werden muessen
+Jedes davon ist ein EIGENSTAENDIGES Todo.
 
-KLASSIFIKATION fuer jedes todo:
-- type: einer von ["bug", "feature", "chore", "task", "spec"]
-- module: passender slug aus der unten stehenden Liste. Falls KEIN Modul passt: pragnanter neuer Slug (lowercase, bindestrich-getrennt)
-- complexity: einer von ["XS", "S", "M", "L", "XL"]
-  - XS = unter 1 Stunde Arbeit
-  - S = 1-4 Stunden
-  - M = halber bis ganzer Tag
-  - L = 2-3 Tage
-  - XL = 1+ Woche
+Lieber zu VIELE Todos als zu wenige - die Triage macht der Mensch. Extrahiere grosszuegig.
 
-Verfuegbare Module (slug: label - beschreibung):
+Wenn im Call etwas fuer die Zukunft besprochen wird (z.B. "in 4 Wochen sollten wir X machen"), ist das trotzdem ein Todo, kein blosses Thema.
+
+Setze confidence: niedrig wenn du unsicher bist ob es wirklich eine Aufgabe ist. Der Mensch entscheidet bei der Triage.
+
+Die "zusammenfassung" ist fuer ALLES was KEIN Todo ist: Statusupdates, Informationsaustausch, Kontextinfos, allgemeine Diskussion. Reine Information ohne Handlungsbedarf gehoert hier hin.
+
+=== KLASSIFIKATION pro Todo ===
+type (genau einer):
+- "bug"         - Fehler in bestehendem Code
+- "feat"        - Neues Feature
+- "improvement" - Verbesserung/Optimierung bestehender Funktionen
+- "security"    - Sicherheitsrelevant
+- "usability"   - UX/Bedienbarkeit
+- "mobile"      - Mobile-App-spezifisch
+- "ai"          - KI-bezogen
+
+module (genau ein slug aus der Liste unten, oder null falls KEIN Modul passt):
 {modules_text}
 
-Schemas:
-todos:           {{id, text (1 Zeile aktionsorientiert), kontext (detailliert, siehe unten - bei Kundencall mit Kundenname), deadline (null falls nicht genannt), person ("fabian" oder "iris"), quelle ("Call {today_human}"), type, module, complexity}}
-offene_punkte:   {{id, text, kontext (detailliert, siehe unten), quelle ("Call {today_human}"), module}}
-themen:          {{id, titel (1 Zeile praegnant), details (detailliert, siehe unten), quelle ("Call {today_human}"), module}}
+complexity (genau einer):
+- "XS" = unter 1 Stunde
+- "S"  = 1-4 Stunden
+- "M"  = halber bis ganzer Tag
+- "L"  = 2-3 Tage
+- "XL" = 1+ Woche
 
-Fuer das Feld "kontext" bei Todos und "details" bei Themen: schreibe DETAILLIERT.
-Jeder Kontext-Eintrag soll enthalten:
-- Was genau das Problem/die Aufgabe ist (konkret, nicht generisch)
-- Warum es relevant ist oder was der Ausloeser war
-- Welche Auswirkungen es hat (wer ist betroffen, was funktioniert nicht)
-- Falls im Call erwaehnt: Loesungsansatz, Zeitrahmen, Abhaengigkeiten
-- Falls eine Deadline genannt wurde: explizit erwaehnen
+person (genau einer):
+- "fabian"
+- "iris"
+- "beide"  (bei Unklarheit immer "beide")
 
-Beispiel SCHLECHT: "Fabian soll den Bug fixen."
-Beispiel GUT: "Die Kalkulations-Uebersicht hat einen Performance-Bug: bei Angeboten mit mehr als 50 Positionen friert der Browser ein. Betrifft alle Nutzer die grosse Leistungsverzeichnisse bearbeiten. Fabian schaetzt 2-3 Tage Aufwand. Wurde im Call als dringend eingestuft weil mehrere Kunden davon betroffen sind."
+confidence (genau einer):
+- "hoch"   - klar formulierte Aufgabe
+- "mittel" - implizit aber wahrscheinlich gemeint
+- "niedrig"- vage, koennte auch nur Diskussionskontext sein
 
-Schreibe 2-4 Saetze pro Kontext-Eintrag. Lieber zu ausfuehrlich als zu knapp.
+text:    1 Zeile, aktionsorientiert, kurze Beschreibung der Aufgabe.
+kontext: 2-3 Saetze fachlicher/technischer Kontext (was genau, warum relevant, Auswirkung, falls genannt: Loesungsansatz/Zeitrahmen/Deadline).
+
+=== zusammenfassung ===
+- titel:          "Call {today_human} - <Teilnehmer>"
+- teilnehmer:     Liste der erkannten Personen, z.B. ["Iris", "Fabian"]
+- dauer_min:      geschaetzte Dauer in Minuten (Zahl)
+- hauptthemen:    Liste der wichtigsten Themen (Strings)
+- entscheidungen: Liste konkreter Entscheidungen (Strings; leer falls keine)
+- inhalt_markdown:ausfuehrliche Zusammenfassung als Markdown (Headings, Listen, Absaetze erlaubt)
 
 Sprache: IMMER Deutsch.
 
 Antworte AUSSCHLIESSLICH mit JSON in diesem exakten Format (keine Markdown-Backticks, kein Fliesstext):
 {{
-  "todos": [...],
-  "offene_punkte": [...],
-  "themen": [...],
-  "zuletzt_aktualisiert": "{datetime.now().strftime('%d.%m.%Y %H:%M')}"
+  "todos": [
+    {{
+      "text": "...",
+      "kontext": "...",
+      "type": "feat",
+      "module": "kalkulation",
+      "complexity": "M",
+      "person": "fabian",
+      "confidence": "hoch"
+    }}
+  ],
+  "zusammenfassung": {{
+    "titel": "Call {today_human} - Iris, Fabian",
+    "teilnehmer": ["Iris", "Fabian"],
+    "dauer_min": 0,
+    "hauptthemen": ["..."],
+    "entscheidungen": ["..."],
+    "inhalt_markdown": "..."
+  }}
 }}
 
-Falls keine Items in einer Kategorie: leere Liste [].
+Falls keine Todos: "todos": []. Die zusammenfassung ist immer vorhanden.
 
 Zusammenfassung:
 ---

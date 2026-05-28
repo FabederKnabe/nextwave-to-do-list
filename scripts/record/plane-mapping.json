@@ -1,0 +1,40 @@
+{
+  "base_url": "https://plane.craftmaster.cloud",
+  "workspace_slug": "craftmaster",
+  "project_id": "b4238996-4f59-485f-a01c-5043e841d661",
+  "states": {
+    "ai_inbox": "UUID_HIER_EINTRAGEN"
+  },
+  "labels": {
+    "bug": "UUID_HIER_EINTRAGEN",
+    "feat": "UUID_HIER_EINTRAGEN",
+    "security": "UUID_HIER_EINTRAGEN",
+    "improvement": "UUID_HIER_EINTRAGEN",
+    "usability": "UUID_HIER_EINTRAGEN",
+    "mobile": "UUID_HIER_EINTRAGEN",
+    "ai": "UUID_HIER_EINTRAGEN"
+  },
+  "modules": {
+    "aufmass": "UUID_HIER_EINTRAGEN",
+    "craftmaster-mobile": "UUID_HIER_EINTRAGEN",
+    "fuhrpark": "UUID_HIER_EINTRAGEN",
+    "kalkulation": "UUID_HIER_EINTRAGEN",
+    "material": "UUID_HIER_EINTRAGEN",
+    "personal": "UUID_HIER_EINTRAGEN",
+    "plantafel": "UUID_HIER_EINTRAGEN",
+    "planung": "UUID_HIER_EINTRAGEN",
+    "projekte": "UUID_HIER_EINTRAGEN",
+    "zeiten": "UUID_HIER_EINTRAGEN"
+  },
+  "members": {
+    "fabian": "UUID_HIER_EINTRAGEN",
+    "iris": "UUID_HIER_EINTRAGEN"
+  },
+  "estimates": {
+    "XS": 1,
+    "S": 2,
+    "M": 3,
+    "L": 5,
+    "XL": 8
+  }
+}
