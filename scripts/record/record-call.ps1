@@ -53,6 +53,8 @@ function Send-Toast {
   }
 }
 
+Import-Module "$PSScriptRoot\pipeline-toast.psm1" -Force
+
 function Update-Lockfile {
   param([int]$FfmpegPid)
   if (-not (Test-Path -LiteralPath $LockfilePath)) {
@@ -151,6 +153,12 @@ try {
   } else {
     Write-Log 'INFO' "ffmpeg exited cleanly (code 0)"
   }
+
+  # Phase 1 der Pipeline-Toast-Sequenz: Aufnahme beendet (Text-only, kein
+  # ProgressBar). process-recording.ps1 uebernimmt anschliessend denselben
+  # Toast via gleichem UniqueIdentifier.
+  Send-PipelineToast -Status 'Aufnahme beendet' -NoProgress
+
   exit 0
 }
 catch {
