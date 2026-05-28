@@ -55,6 +55,11 @@ $Settings = New-ScheduledTaskSettingsSet `
   -MultipleInstances IgnoreNew `
   -ExecutionTimeLimit (New-TimeSpan -Hours 9999)
 
+# Akku-Flags aus: Surface laeuft oft auf Batterie, sonst Watcher tot
+# nach Wake-from-Standby (siehe Incident 2026-05-28).
+$Settings.DisallowStartIfOnBatteries = $false
+$Settings.StopIfGoingOnBatteries = $false
+
 $Principal = New-ScheduledTaskPrincipal `
   -UserId $env:USERNAME `
   -LogonType Interactive `
