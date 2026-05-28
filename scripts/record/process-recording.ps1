@@ -56,39 +56,7 @@ function Send-Toast {
   }
 }
 
-# Pipeline-Toast mit UniqueIdentifier 'nw-call-pipeline'. Mehrfache Aufrufe
-# updaten denselben Toast (Tag-Replace). ProgressBar optional (Value 0..1,
-# Indeterminate, oder ganz weglassen mit -NoProgress). Immer -Silent.
-function Send-PipelineToast {
-  param(
-    [string]$Title = 'nextWAVE Pipeline',
-    [string]$Status,
-    [double]$ProgressValue = -1,
-    [string]$ValueDisplay = '',
-    [switch]$Indeterminate,
-    [switch]$NoProgress
-  )
-  if (-not (Get-Module -ListAvailable -Name BurntToast)) { return }
-  try {
-    Import-Module BurntToast -ErrorAction Stop
-    $btParams = @{
-      Text             = @($Title, $Status)
-      UniqueIdentifier = 'nw-call-pipeline'
-      Silent           = $true
-    }
-    if (-not $NoProgress) {
-      if ($Indeterminate) {
-        $pb = New-BTProgressBar -Status $Status -Indeterminate
-      } else {
-        $val  = if ($ProgressValue -ge 0) { $ProgressValue } else { 0.0 }
-        $disp = if ($ValueDisplay) { $ValueDisplay } else { '{0:P0}' -f $val }
-        $pb = New-BTProgressBar -Status $Status -Value $val -ValueDisplay $disp
-      }
-      $btParams['ProgressBar'] = $pb
-    }
-    New-BurntToastNotification @btParams
-  } catch { }
-}
+Import-Module "$PSScriptRoot\pipeline-toast.psm1" -Force
 
 function Invoke-PythonScript {
   param([string]$ScriptPath, [string]$InputArg)
