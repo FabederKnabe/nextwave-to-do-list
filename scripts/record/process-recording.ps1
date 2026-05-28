@@ -56,6 +56,40 @@ function Send-Toast {
   }
 }
 
+# Pipeline-Toast mit UniqueIdentifier 'nw-call-pipeline'. Mehrfache Aufrufe
+# updaten denselben Toast (Tag-Replace). ProgressBar optional (Value 0..1,
+# Indeterminate, oder ganz weglassen mit -NoProgress). Immer -Silent.
+function Send-PipelineToast {
+  param(
+    [string]$Title = 'nextWAVE Pipeline',
+    [string]$Status,
+    [double]$ProgressValue = -1,
+    [string]$ValueDisplay = '',
+    [switch]$Indeterminate,
+    [switch]$NoProgress
+  )
+  if (-not (Get-Module -ListAvailable -Name BurntToast)) { return }
+  try {
+    Import-Module BurntToast -ErrorAction Stop
+    $btParams = @{
+      Text             = @($Title, $Status)
+      UniqueIdentifier = 'nw-call-pipeline'
+      Silent           = $true
+    }
+    if (-not $NoProgress) {
+      if ($Indeterminate) {
+        $pb = New-BTProgressBar -Status $Status -Indeterminate
+      } else {
+        $val  = if ($ProgressValue -ge 0) { $ProgressValue } else { 0.0 }
+        $disp = if ($ValueDisplay) { $ValueDisplay } else { '{0:P0}' -f $val }
+        $pb = New-BTProgressBar -Status $Status -Value $val -ValueDisplay $disp
+      }
+      $btParams['ProgressBar'] = $pb
+    }
+    New-BurntToastNotification @btParams
+  } catch { }
+}
+
 function Invoke-PythonScript {
   param([string]$ScriptPath, [string]$InputArg)
   $tmpOut = [System.IO.Path]::GetTempFileName()
@@ -98,18 +132,64 @@ try {
   $txtPath = Join-Path $BaseDir "$basename.txt"
   $summaryPath = Join-Path $BaseDir "$basename`_summary.md"
 
-  # --- 1. Transkription ---
+  # --- 1. Transkription (mit Live-Progress via PROGRESS:-Zeilen auf stdout) ---
   Write-Log 'INFO' "[$basename] Transcribe start"
-  $r = Invoke-PythonScript -ScriptPath $TranscribePy -InputArg $Mp3Path
-  if ($r.ExitCode -ne 0) {
-    throw "transcribe.py failed (exit $($r.ExitCode)): $($r.Stderr)"
+  Send-PipelineToast -Status 'Transkribierung startet...' -ProgressValue 0.0 -ValueDisplay '0%'
+
+  # transcribe.py wird hier - im Gegensatz zu summarize/extract - NICHT ueber
+  # Invoke-PythonScript gestartet, weil wir stdout zeilenweise live lesen
+  # muessen (PROGRESS:<float>-Zeilen pro Whisper-Segment).
+  $tPsi = New-Object System.Diagnostics.ProcessStartInfo
+  $tPsi.FileName               = $PythonExe
+  $tPsi.Arguments              = "`"$TranscribePy`" `"$Mp3Path`""
+  $tPsi.UseShellExecute        = $false
+  $tPsi.CreateNoWindow         = $true
+  $tPsi.RedirectStandardOutput = $true
+  $tPsi.RedirectStandardError  = $true
+  $tPsi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+  $tPsi.StandardErrorEncoding  = [System.Text.Encoding]::UTF8
+  $tPsi.EnvironmentVariables['PYTHONIOENCODING'] = 'utf-8'
+
+  $tProc = New-Object System.Diagnostics.Process
+  $tProc.StartInfo = $tPsi
+  [void]$tProc.Start()
+
+  # stderr async einsammeln (Pipe-Buffer darf nicht blocken)
+  $tStderrTask = $tProc.StandardError.ReadToEndAsync()
+  $tStdoutBuf  = New-Object System.Text.StringBuilder
+  $invariant   = [System.Globalization.CultureInfo]::InvariantCulture
+  $numStyles   = [System.Globalization.NumberStyles]::Float
+
+  while (-not $tProc.StandardOutput.EndOfStream) {
+    $line = $tProc.StandardOutput.ReadLine()
+    if ($null -eq $line) { break }
+    if ($line.StartsWith('PROGRESS:')) {
+      $valStr = $line.Substring(9).Trim()
+      $val = 0.0
+      if ([double]::TryParse($valStr, $numStyles, $invariant, [ref]$val)) {
+        $pct = [int]([math]::Round($val * 100))
+        Send-PipelineToast -Status 'Transkribierung läuft...' -ProgressValue $val -ValueDisplay "$pct%"
+      }
+    } else {
+      [void]$tStdoutBuf.AppendLine($line)
+    }
+  }
+  $tProc.WaitForExit()
+  $tStderr = ''
+  try { $tStderr = $tStderrTask.GetAwaiter().GetResult() } catch { $tStderr = '' }
+  $tExit = $tProc.ExitCode
+
+  if ($tExit -ne 0) {
+    throw "transcribe.py failed (exit $tExit): $tStderr"
   }
   if (-not (Test-Path -LiteralPath $txtPath)) {
     throw "transcribe.py did not produce $txtPath"
   }
+  Send-PipelineToast -Status 'Transkribierung beendet' -NoProgress
   Write-Log 'OK' "[$basename] Transcribe done"
 
   # --- 2. Summary (Stufe 1) ---
+  Send-PipelineToast -Status 'Gemini verarbeitet...' -Indeterminate
   Write-Log 'INFO' "[$basename] Summarize start"
   $r = Invoke-PythonScript -ScriptPath $SummarizePy -InputArg $txtPath
   if ($r.ExitCode -ne 0) {
@@ -145,7 +225,7 @@ try {
         Move-Item -LiteralPath $f -Destination $PrivateDir -Force -ErrorAction SilentlyContinue
       }
     }
-    Send-Toast -Title 'nextWAVE Pipeline' -Message 'Kein relevanter Inhalt - vermutlich privater Call. Audio archiviert.'
+    Send-PipelineToast -Status 'Kein relevanter Inhalt - vermutlich privater Call. Audio archiviert.' -NoProgress
     exit 0
   }
 
@@ -165,14 +245,15 @@ try {
     }
   }
 
-  # --- 8. Toast ---
-  Send-Toast -Title 'nextWAVE Pipeline' `
-    -Message "Call verarbeitet (TEST) - $tCount Todos, $oCount offene Punkte, $hCount Themen"
+  # --- 8. Toast (Fertig - aktualisiert denselben Pipeline-Toast) ---
+  Send-PipelineToast `
+    -Status "Call verarbeitet (TEST) - $tCount Todos, $oCount offene Punkte, $hCount Themen" `
+    -NoProgress
   Write-Log 'OK' "[$basename] Pipeline complete (TEST): $tCount todos, $oCount offen, $hCount themen"
 }
 catch {
   $msg = $_.Exception.Message
   Write-Log 'ERROR' "Pipeline failed: $msg"
-  Send-Toast -Title 'nextWAVE Pipeline' -Message "Fehler: $msg"
+  Send-PipelineToast -Status "Fehler: $msg" -NoProgress
   exit 1
 }

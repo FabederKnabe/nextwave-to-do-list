@@ -53,6 +53,26 @@ function Send-Toast {
   }
 }
 
+# Pipeline-Toast mit UniqueIdentifier 'nw-call-pipeline'. Shared mit
+# process-recording.ps1 - hier nur Text-Variante (-NoProgress) noetig.
+# Identifier-Replace funktioniert prozessuebergreifend (Windows Action
+# Center tagged toasts per AppId+Tag).
+function Send-PipelineToast {
+  param(
+    [string]$Title = 'nextWAVE Pipeline',
+    [string]$Status,
+    [switch]$NoProgress
+  )
+  if (-not (Get-Module -ListAvailable -Name BurntToast)) { return }
+  try {
+    Import-Module BurntToast -ErrorAction Stop
+    New-BurntToastNotification `
+      -Text @($Title, $Status) `
+      -UniqueIdentifier 'nw-call-pipeline' `
+      -Silent
+  } catch { }
+}
+
 function Update-Lockfile {
   param([int]$FfmpegPid)
   if (-not (Test-Path -LiteralPath $LockfilePath)) {
@@ -151,6 +171,12 @@ try {
   } else {
     Write-Log 'INFO' "ffmpeg exited cleanly (code 0)"
   }
+
+  # Phase 1 der Pipeline-Toast-Sequenz: Aufnahme beendet (Text-only, kein
+  # ProgressBar). process-recording.ps1 uebernimmt anschliessend denselben
+  # Toast via gleichem UniqueIdentifier.
+  Send-PipelineToast -Status 'Aufnahme beendet' -NoProgress
+
   exit 0
 }
 catch {
