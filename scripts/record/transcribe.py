@@ -22,7 +22,7 @@ audio_path = sys.argv[1]
 output_path = os.path.splitext(audio_path)[0] + ".txt"
 
 # Modell large-v3-turbo, CPU + int8 fuer AMD-Surface
-model = WhisperModel("large-v3-turbo", device="cpu", compute_type="int8")
+model = WhisperModel("TheChola/whisper-large-v3-turbo-german-faster-whisper", device="cpu", compute_type="int8")
 
 # Audio in 10-Min-Chunks splitten um Speicher konstant zu halten
 tmpdir = tempfile.mkdtemp(prefix="whisper_chunks_")
