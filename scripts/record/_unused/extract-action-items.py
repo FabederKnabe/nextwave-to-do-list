@@ -5,7 +5,7 @@ Liest Markdown-Summary (Output von summarize-call.py), schickt an
 Gemini 2.5 Pro, gibt strukturiertes JSON nach stdout aus.
 
 Schema (NEU - nur noch zwei Bloecke fuer Plane):
-    todos: [{text, kontext, type, module, complexity, person, confidence}]
+    todos: [{text, kontext, type, module, complexity, confidence}]
     zusammenfassung: {titel, teilnehmer, dauer_min, hauptthemen,
                       entscheidungen, inhalt_markdown}
 
@@ -82,6 +82,11 @@ Setze confidence: niedrig wenn du unsicher bist ob es wirklich eine Aufgabe ist.
 
 Die "zusammenfassung" ist fuer ALLES was KEIN Todo ist: Statusupdates, Informationsaustausch, Kontextinfos, allgemeine Diskussion. Reine Information ohne Handlungsbedarf gehoert hier hin.
 
+=== FORMULIERUNG (WICHTIG) ===
+- Formuliere ALLE Texte und Kontexte neutral und professionell. Vermeide Personennamen in Aufgabenbeschreibungen. Statt "Fabian muss den Bug fixen" schreibe "Der Bug muss behoben werden". Statt "Iris hat vorgeschlagen" schreibe "Es wurde vorgeschlagen".
+- Die Tickets werden in einem professionellen Kanban-Board angezeigt. Sie muessen fuer sich allein stehen - ohne Wissen ueber den Call verstaendlich sein. Sie sollen wie professionelle Tickets klingen, nicht wie Gespraechsnotizen.
+- Vermeide Gespraechsreferenzen wie "wurde besprochen", "im Call erwaehnt", "laut Gespraech", "Iris hat gesagt", "Fabian meinte". Schreibe stattdessen die Fakten direkt auf, als waeren sie eigenstaendige Anforderungen.
+
 === KLASSIFIKATION pro Todo ===
 type (genau einer):
 - "bug"         - Fehler in bestehendem Code
@@ -102,18 +107,13 @@ complexity (genau einer):
 - "L"  = 2-3 Tage
 - "XL" = 1+ Woche
 
-person (genau einer):
-- "fabian"
-- "iris"
-- "beide"  (bei Unklarheit immer "beide")
-
 confidence (genau einer):
 - "hoch"   - klar formulierte Aufgabe
 - "mittel" - implizit aber wahrscheinlich gemeint
 - "niedrig"- vage, koennte auch nur Diskussionskontext sein
 
-text:    1 Zeile, aktionsorientiert, kurze Beschreibung der Aufgabe.
-kontext: 2-3 Saetze fachlicher/technischer Kontext (was genau, warum relevant, Auswirkung, falls genannt: Loesungsansatz/Zeitrahmen/Deadline).
+text:    1 Zeile, aktionsorientiert, neutral formuliert, kurze Beschreibung der Aufgabe (keine Personennamen).
+kontext: Mindestens 4-5 ausfuehrliche Saetze. Erklaere den fachlichen/technischen Hintergrund, warum die Aufgabe wichtig ist, welche Randbedingungen bekannt sind, und welche konkreten Details genannt wurden (ohne Personenzuordnung, ohne Gespraechsreferenzen). Lieber zu viel Kontext als zu wenig. In 3 Wochen liest jemand dieses Ticket ohne sich an den Call zu erinnern - es muss trotzdem vollstaendig verstaendlich sein.
 
 === zusammenfassung ===
 - titel:          "Call {today_human} - <Teilnehmer>"
@@ -129,12 +129,11 @@ Antworte AUSSCHLIESSLICH mit JSON in diesem exakten Format (keine Markdown-Backt
 {{
   "todos": [
     {{
-      "text": "...",
-      "kontext": "...",
+      "text": "Mengenberechnung in der Kalkulation um Verschnittfaktor erweitern",
+      "kontext": "Die Kalkulation berechnet aktuell die benoetigte Materialmenge ohne Verschnitt, wodurch bei Bestellungen regelmaessig zu wenig Material kalkuliert wird. Insbesondere bei Plattenmaterial und Rollenware faellt ein nicht unerheblicher Verschnitt an, der bislang manuell aufgeschlagen werden muss. Ein konfigurierbarer Verschnittfaktor pro Materialkategorie soll diesen Aufschlag automatisieren. Als Randbedingung muss der Faktor pro Position ueberschreibbar bleiben, da einzelne Materialien stark abweichende Verschnittwerte haben. Ohne diese Erweiterung bleiben Kalkulationen systematisch zu niedrig und fuehren zu Nachbestellungen.",
       "type": "feat",
       "module": "kalkulation",
       "complexity": "M",
-      "person": "fabian",
       "confidence": "hoch"
     }}
   ],

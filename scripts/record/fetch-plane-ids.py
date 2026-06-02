@@ -1,7 +1,7 @@
 """
 fetch-plane-ids.py - Hilfsscript Branch A2 (Plane-Migration)
 
-Holt die UUIDs (States, Labels, Modules, Members) aus der Plane API und
+Holt die UUIDs (States, Labels, Modules) aus der Plane API und
 schreibt sie in plane-mapping.json. Matching per Name (case-insensitive;
 Module per partial match, weil Plane-Modulnamen ausgeschrieben sind und das
 Mapping kurze Slugs nutzt).
@@ -60,12 +60,6 @@ EXPECTED_LABELS = {
     "usability": "usability",
     "mobile": "mobile",
     "ai": "ai",
-}
-
-# Member-Match per Anzeigename / E-Mail-Prefix (partial, case-insensitive).
-EXPECTED_MEMBERS = {
-    "fabian": "fabian",
-    "iris": "iris",
 }
 
 
@@ -127,24 +121,6 @@ def match_partial(items, name, name_key='name'):
     return None
 
 
-def member_display(member):
-    """Plane-Member-Objekt -> durchsuchbarer Anzeige-String."""
-    # Membership-Endpoint schachtelt das User-Objekt teils unter 'member'.
-    user = member.get('member') if isinstance(member.get('member'), dict) else member
-    parts = [
-        user.get('display_name'),
-        user.get('first_name'),
-        user.get('last_name'),
-        user.get('email'),
-    ]
-    return ' '.join([p for p in parts if p]).lower()
-
-
-def member_id(member):
-    user = member.get('member') if isinstance(member.get('member'), dict) else member
-    return user.get('id') or member.get('id')
-
-
 def main():
     token = os.environ.get('PLANE_API_TOKEN')
     if not token:
@@ -194,23 +170,6 @@ def main():
             print(f"  module {slug} -> {hit.get('name')} ({hit['id']})")
         else:
             warn(f"Module '{expected}' (slug {slug}) nicht gefunden.")
-
-    # --- Members (Workspace-Ebene) ---
-    print("Hole Members...")
-    members = extract_results(api_get(f"{base}/api/v1/workspaces/{ws}/members/", headers))
-    for slug, expected in EXPECTED_MEMBERS.items():
-        target = expected.strip().lower()
-        hit = None
-        for m in members:
-            if target in member_display(m):
-                hit = m
-                break
-        if hit:
-            mid = member_id(hit)
-            mapping['members'][slug] = mid
-            print(f"  member {slug} -> {member_display(hit).strip()} ({mid})")
-        else:
-            warn(f"Member '{expected}' (slug {slug}) nicht gefunden.")
 
     save_mapping(mapping)
     print(f"\nplane-mapping.json aktualisiert: {MAPPING_PATH}")
