@@ -80,6 +80,13 @@ Wenn im Call etwas fuer die Zukunft besprochen wird (z.B. "in 4 Wochen sollten w
 
 Setze confidence: niedrig wenn du unsicher bist ob es wirklich eine Aufgabe ist. Der Mensch entscheidet bei der Triage.
 
+=== GRANULARITAET (SEHR WICHTIG) ===
+- Erstelle lieber 20 kleine, einzelne Tickets als 10 zusammengefasste. Jede eigenstaendige Aufgabe, Recherche, Evaluierung oder Entscheidung wird ein EIGENES Ticket.
+- Fasse NIEMALS mehrere Aufgaben in einem Ticket zusammen. Wenn im Gespraech drei verschiedene Einschraenkungen fuer Test-Accounts besprochen werden, entstehen daraus drei separate Tickets - nicht eines.
+- Wenn ein Thema aus mehreren Teilschritten besteht (z.B. "Recherche" und "Konzept erstellen" und "Implementierung"), erstelle fuer jeden Teilschritt ein eigenes Ticket.
+- Auch beilaeufig erwaehnte Aufgaben, strategische Ideen, Recherche-Auftraege und "sollten wir mal machen"-Punkte werden eigene Tickets. Setze bei Unsicherheit confidence auf "niedrig" statt das Ticket wegzulassen.
+- Ziel: Aus einem 30-Minuten-Call sollten typischerweise 15-25 Tickets entstehen. Wenn du weniger als 10 extrahierst, pruefe ob du Themen zusammengefasst oder uebersprungen hast.
+
 Die "zusammenfassung" ist fuer ALLES was KEIN Todo ist: Statusupdates, Informationsaustausch, Kontextinfos, allgemeine Diskussion. Reine Information ohne Handlungsbedarf gehoert hier hin.
 
 === FORMULIERUNG (WICHTIG) ===
