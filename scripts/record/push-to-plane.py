@@ -100,12 +100,11 @@ def post_issue(cfg, headers, todo, datum):
 
     kontext = html.escape(todo.get('kontext') or '')
     confidence = html.escape(str(todo.get('confidence') or ''))
-    complexity = html.escape(str(todo.get('complexity') or ''))
-    # Estimate-API auf der Self-Hosted-Plane-Version nicht verfuegbar (404).
-    # Complexity stattdessen in die Description schreiben (sichtbar bei Triage).
+    # Kontext (ausfuehrlicher Fliesstext) + Confidence (Triage-Hilfe) + Quelle.
+    # Complexity entfaellt (war nie als Plane-Estimate gesetzt). Person entfaellt
+    # (Zuweisung macht die menschliche Triage).
     description_html = (
         f"<p>{kontext}</p>"
-        f"<p><strong>Complexity:</strong> {complexity}</p>"
         f"<p><strong>Confidence:</strong> {confidence}</p>"
         f"<p><strong>Quelle:</strong> Call {html.escape(datum)}</p>"
     )
@@ -119,21 +118,6 @@ def post_issue(cfg, headers, todo, datum):
     elif ttype:
         log('WARN', f"Kein Label-UUID fuer type '{ttype}' - Issue ohne Label.")
 
-    # Assignees (person -> ein/e oder beide Member)
-    assignees = []
-    person = todo.get('person')
-    if person == 'beide':
-        for key in ('fabian', 'iris'):
-            uid = cfg['members'].get(key)
-            if uid and not is_placeholder(uid):
-                assignees.append(uid)
-    elif person:
-        uid = cfg['members'].get(person)
-        if uid and not is_placeholder(uid):
-            assignees.append(uid)
-        else:
-            log('WARN', f"Kein Member-UUID fuer person '{person}' - Issue ohne Assignee.")
-
     state_uuid = cfg['states'].get('ai_inbox')
 
     payload = {
@@ -145,8 +129,6 @@ def post_issue(cfg, headers, todo, datum):
         payload["state"] = state_uuid
     if labels:
         payload["labels"] = labels
-    if assignees:
-        payload["assignees"] = assignees
 
     resp = request_with_retry('POST', url, headers, payload)
     if resp.status_code not in (200, 201):
