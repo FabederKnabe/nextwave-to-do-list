@@ -17,8 +17,30 @@ Voraussetzung: GEMINI_API_KEY env var.
 import os
 import sys
 import io
+import time
 from datetime import datetime
 from google import genai
+from google.genai import errors
+
+
+def generate_with_retry(**kwargs):
+    """client.models.generate_content mit Retry bei transienten 503/429.
+
+    Gemini 2.5 Pro wirft regelmaessig 503 UNAVAILABLE bei Demand-Spikes.
+    Max 10 Versuche, exponentieller Backoff (auf 480s gedeckelt), nur bei
+    ServerError 503/429. Andere Fehler sofort raisen. Nach 10 Versuchen
+    den letzten Fehler raisen, damit der Aufrufer ihn sieht.
+    """
+    backoffs = [30, 60, 120, 240, 480]
+    for attempt in range(1, 11):
+        try:
+            return client.models.generate_content(**kwargs)
+        except errors.ServerError as e:
+            if e.code not in (503, 429) or attempt == 10:
+                raise
+            wait = backoffs[min(attempt - 1, len(backoffs) - 1)]
+            print(f"Gemini 503/429 - Retry {attempt}/10 in {wait}s...", file=sys.stderr)
+            time.sleep(wait)
 
 # Windows-Python-Default fuer stdout/stderr ist cp1252 - defensiv auf
 # UTF-8 setzen, falls die Pipeline-Glue irgendwann mal mehr als nur den
@@ -76,7 +98,7 @@ Transkript:
 {transcript}
 ---"""
 
-response = client.models.generate_content(
+response = generate_with_retry(
     model='gemini-2.5-pro',
     contents=PROMPT,
 )
