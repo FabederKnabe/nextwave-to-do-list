@@ -2,12 +2,15 @@
 <#
   watch-mailbox-call.ps1
 
-  Endlos-Watcher (5s Polling). Erkennt Edge-Fenster mit "meet.mailbox.org"
+  Endlos-Watcher (5s Polling). Erkennt Browser-Fenster mit "meet.mailbox.org"
   im Titel und steuert Aufnahme + nachgelagerte Pipeline.
 
+  Erkennung ist rein titelbasiert und damit browser-unabhaengig (Chrome,
+  Edge, Firefox ...). Kein Prozessname-Filter noetig.
+
   Ablauf:
-    - Edge-Fenster gefunden + kein Lockfile           -> Aufnahme starten
-    - Kein Edge-Fenster mehr (3 Polls in Folge = 15s) -> Aufnahme stoppen
+    - Call-Fenster gefunden + kein Lockfile           -> Aufnahme starten
+    - Kein Call-Fenster mehr (3 Polls in Folge = 15s) -> Aufnahme stoppen
                                                          + process-recording.ps1 starten
 
   Lockfile-Schema (JSON):
@@ -24,7 +27,7 @@ $ProgressPreference    = 'SilentlyContinue'
 
 # --- Win32-Window-Enumeration ---
 # Get-Process MainWindowTitle ist nur fuer aktive Fenster gesetzt. Hintergrund-
-# Edge-Fenster haben leeren Titel -> Watcher denkt Call ist vorbei sobald User
+# Browser-Fenster haben leeren Titel -> Watcher denkt Call ist vorbei sobald User
 # kurz auf VS Code wechselt. Stattdessen: EnumWindows + GetWindowText liest
 # Titel ALLER sichtbaren Top-Level-Fenster.
 # Add-Type ist nicht idempotent: zweiter Aufruf wirft "type already exists".
@@ -115,10 +118,16 @@ function Send-Toast {
   } catch { }
 }
 
+# Merkt sich den zuletzt matchenden Fenstertitel. Der Titel endet auf den
+# Browsernamen ('... - Google Chrome') -> Log zeigt den real gefundenen
+# Browser statt eines hardcodeten Namens.
+$Script:LastMatchedTitle = ''
+
 function Test-MailboxCallActive {
   try {
     $titles = Get-AllWindowTitles
     $hits = @($titles | Where-Object { $_ -match '(meet\.mailbox\.org|OpenTalk-Meeting|mailbox Suite - Meet)' })
+    if ($hits.Count -gt 0) { $Script:LastMatchedTitle = $hits[0] }
     return ($hits.Count -gt 0)
   } catch {
     Write-Log 'WARN' "Test-MailboxCallActive error: $($_.Exception.Message)"
@@ -155,7 +164,7 @@ function Start-Recording {
     Write-Log 'ERROR' "Could not start record-call.ps1: $($_.Exception.Message)"
     return $null
   }
-  Write-Log 'INFO' "Recording start -> $mp3Path"
+  Write-Log 'INFO' "Recording start -> $mp3Path (Fenster: $Script:LastMatchedTitle)"
   Send-Toast -Title 'nextWAVE Recorder' -Message "Aufnahme laeuft: $stamp.mp3"
   return $mp3Path
 }
