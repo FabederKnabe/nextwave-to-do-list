@@ -71,7 +71,7 @@ Register-ScheduledTask `
   -Trigger $Trigger `
   -Settings $Settings `
   -Principal $Principal `
-  -Description 'nextWAVE Call Watcher: Supervisor haelt watch-mailbox-call.ps1 dauerhaft am Leben (Edge-Erkennung, Aufnahme, Pipeline).' `
+  -Description 'nextWAVE Call Watcher: Supervisor haelt watch-mailbox-call.ps1 dauerhaft am Leben (Browser-Fenstererkennung, Aufnahme, Pipeline).' `
   -Force | Out-Null
 
 Write-Host ""

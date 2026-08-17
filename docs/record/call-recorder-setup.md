@@ -9,9 +9,9 @@ Scheduled Task (AtLogon)
 watcher-supervisor.ps1  ──► startet watch-mailbox-call.ps1 als Subprocess
         │                   restartet automatisch bei jedem Exit (5s Pause)
         ▼
-Edge-Tab meet.mailbox.org ──► Watcher erkennt ──► record-call.ps1 (ffmpeg)
+Browser-Tab meet.mailbox.org ─► Watcher erkennt ──► record-call.ps1 (ffmpeg)
                                                          │
-                                                  Edge-Tab zu
+                                                Browser-Tab zu
                                                          │
                                           process-recording.ps1
                                                          │
@@ -21,6 +21,11 @@ Edge-Tab meet.mailbox.org ──► Watcher erkennt ──► record-call.ps1 (f
                                                          │
                                                 Toast + done/
 ```
+
+Browser-Erkennung: rein titelbasiert (`EnumWindows` ueber alle sichtbaren
+Fenster, Match auf `meet.mailbox.org|OpenTalk-Meeting|mailbox Suite - Meet`).
+Kein Prozessname-Filter — funktioniert mit Chrome, Edge, Firefox gleichermassen,
+ein Browserwechsel erfordert keine Code-Aenderung.
 
 Push-Architektur: kein Dauer-Task. push-patches.ps1 laeuft sofort nach Extract.
 Bei Fehler: scheduled sich selbst (5min, 30min, 2h) und entfernt den Retry-Task,
