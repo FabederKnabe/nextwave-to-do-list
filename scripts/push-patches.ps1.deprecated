@@ -1,3 +1,5 @@
+# DEPRECATED: Ersetzt durch scripts/record/push-to-plane.py (Branch A2)
+# Behalten als Referenz, wird nicht mehr aufgerufen.
 #Requires -Version 5.1
 <#
   push-patches.ps1
