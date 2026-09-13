@@ -48,8 +48,15 @@ sobald `patches\` leer ist.
 - **Env-Variablen** (User-Scope):
   ```
   setx GEMINI_API_KEY "..."
-  setx SUPABASE_SERVICE_ROLE_KEY "..."
   ```
+- **Supabase-Service-Role-Key** in `.env.local` im Repo-Root (gitignored), **nicht** per `setx`:
+  ```
+  SUPABASE_SERVICE_ROLE_KEY=...
+  ```
+  Eine Windows-Benutzervariable `SUPABASE_SERVICE_ROLE_KEY` gilt fuer jeden Prozess und
+  verdeckt in anderen Projekten deren `.env` (dotenv ueberschreibt vorhandene Variablen nicht).
+  `push-patches.ps1` liest nur `.env.local` und bricht ab, wenn Datei oder Key fehlen.
+  Pruefen ohne Push: `push-patches.ps1 -CheckEnv`.
 - **Whisper-Modell** `large-v3-turbo` (laedt automatisch beim ersten Aufruf)
 
 ## Migration von alter Pipeline
