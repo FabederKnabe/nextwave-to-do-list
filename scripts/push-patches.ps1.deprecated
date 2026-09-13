@@ -27,8 +27,10 @@
 
   Silent-Exit: keine Patches, kein Log, kein Toast, exit 0.
 
-  Endpoint hardcoded. Service-Role-Key aus User-Env-Var SUPABASE_SERVICE_ROLE_KEY.
+  Endpoint hardcoded. Service-Role-Key aus .env.local im Repo-Root (gitignored),
+  nur fuer die Dauer des Laufs in der Prozessumgebung. -CheckEnv prueft nur das.
 #>
+param([switch]$CheckEnv)
 
 $ErrorActionPreference = 'Stop'
 
@@ -47,7 +49,17 @@ $SupabaseHost = 'eufqqvatktwzyrjzrhoi.supabase.co'
 # Anon-Key ist öffentlich (siehe index.html), darf hardcoded sein.
 $AnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1ZnFxdmF0a3R3enlyanpyaG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDY2OTUsImV4cCI6MjA5Mjk4MjY5NX0.JaFG4n3Y223H7EsCxiD3skHdaNmnKU8yNHHQ6D3ZErU'
 
+# Nur .env.local zaehlt: eine geerbte Umgebungsvariable wird verworfen, sonst verdeckt
+# ein fremder Wert still die Datei.
+$EnvFile = Join-Path $PSScriptRoot '..\.env.local'
+if (-not (Test-Path -LiteralPath $EnvFile)) { throw "Abbruch: $EnvFile fehlt (SUPABASE_SERVICE_ROLE_KEY)." }
+$env:SUPABASE_SERVICE_ROLE_KEY = $null
+foreach ($line in Get-Content -LiteralPath $EnvFile) {
+  if ($line -match '^\s*SUPABASE_SERVICE_ROLE_KEY\s*=\s*(\S+)\s*$') { $env:SUPABASE_SERVICE_ROLE_KEY = $matches[1] }
+}
 $ServiceKey = $env:SUPABASE_SERVICE_ROLE_KEY
+if (-not $ServiceKey) { throw "Abbruch: SUPABASE_SERVICE_ROLE_KEY fehlt in $EnvFile." }
+if ($CheckEnv) { Write-Output "Env ok: SUPABASE_SERVICE_ROLE_KEY aus $EnvFile geladen."; exit 0 }
 
 # --- Helpers ---
 function Write-Log {
